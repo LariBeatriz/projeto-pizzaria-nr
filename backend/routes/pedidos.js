@@ -1,3 +1,10 @@
+/**
+ * @swagger
+ * tags:
+ *   name: Pedidos
+ *   description: Endpoints para gerenciar pedidos
+ */
+
 var express = require('express');
 var router = express.Router();
 var sqlite3 = require('sqlite3');
@@ -28,7 +35,32 @@ db.run(`
   }
 });
 
-/* POST /pedidos - Criar um novo pedido */
+/**
+ * @swagger
+ * /pedidos:
+ *   post:
+ *     summary: Cria um novo pedido
+ *     tags: [Pedidos]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/PedidoInput'
+ *     responses:
+ *       201:
+ *         description: Pedido criado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Pedido criado com sucesso
+ *       500:
+ *         description: Erro ao criar o pedido
+ */
 router.post('/', (req, res) => {
   console.log(req.body);
   const {
@@ -56,7 +88,7 @@ router.post('/', (req, res) => {
       formaPagamento,
       totalPedido,
       observacoes,
-      JSON.stringify(itensPedido), // Convertendo array/obj para JSON string
+      JSON.stringify(itensPedido),
       JSON.stringify(subtotalPorItem),
       tipoPedido,
       enderecoEntrega
@@ -72,14 +104,30 @@ router.post('/', (req, res) => {
   );
 });
 
-/* GET /pedidos - Listar todos os pedidos */
+/**
+ * @swagger
+ * /pedidos:
+ *   get:
+ *     summary: Lista todos os pedidos
+ *     tags: [Pedidos]
+ *     responses:
+ *       200:
+ *         description: Lista de pedidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Pedido'
+ *       500:
+ *         description: Erro ao buscar pedidos
+ */
 router.get('/', (req, res) => {
   db.all(`SELECT * FROM pedidos`, (err, pedidos) => {
     if (err) {
       console.error('Erro ao buscar pedidos:', err);
       return res.status(500).send({ error: 'Erro ao buscar pedidos' });
     } else {
-      // Parse JSON dos campos de itens para facilitar
       const pedidosFormatados = pedidos.map((pedido) => ({
         ...pedido,
         itensPedido: JSON.parse(pedido.itensPedido || '[]'),
@@ -90,7 +138,31 @@ router.get('/', (req, res) => {
   });
 });
 
-/* GET /pedidos/:id - Buscar pedido por ID */
+/**
+ * @swagger
+ * /pedidos/{id}:
+ *   get:
+ *     summary: Obtém um pedido pelo ID
+ *     tags: [Pedidos]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do pedido
+ *     responses:
+ *       200:
+ *         description: Dados do pedido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Pedido'
+ *       404:
+ *         description: Pedido não encontrado
+ *       500:
+ *         description: Erro ao buscar o pedido
+ */
 router.get('/:id', (req, res) => {
   const { id } = req.params;
 
@@ -102,14 +174,47 @@ router.get('/:id', (req, res) => {
     if (!row) {
       return res.status(404).json({ error: 'Pedido não encontrado' });
     }
-    // Parse JSON dos campos de itens
     row.itensPedido = JSON.parse(row.itensPedido || '[]');
     row.subtotalPorItem = JSON.parse(row.subtotalPorItem || '[]');
     res.status(200).json(row);
   });
 });
 
-/* PUT /pedidos/:id - Atualizar todos os dados de um pedido */
+/**
+ * @swagger
+ * /pedidos/{id}:
+ *   put:
+ *     summary: Atualiza todos os dados de um pedido
+ *     tags: [Pedidos]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do pedido
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/PedidoInput'
+ *     responses:
+ *       200:
+ *         description: Pedido atualizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Pedido atualizado com sucesso
+ *       404:
+ *         description: Pedido não encontrado
+ *       500:
+ *         description: Erro ao atualizar o pedido
+ */
 router.put('/:id', (req, res) => {
   const { id } = req.params;
   const {
@@ -164,7 +269,91 @@ router.put('/:id', (req, res) => {
   );
 });
 
-/* PATCH /pedidos/:id - Atualização parcial */
+/**
+ * @swagger
+ * /pedidos/{id}:
+ *   patch:
+ *     summary: Atualiza parcialmente um pedido
+ *     tags: [Pedidos]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do pedido
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               dataHora:
+ *                 type: string
+ *                 format: date-time
+ *                 example: "2023-01-01T12:00:00Z"
+ *               cliente:
+ *                 type: string
+ *                 example: "João Silva"
+ *               statusPedido:
+ *                 type: string
+ *                 example: "Em andamento"
+ *               formaPagamento:
+ *                 type: string
+ *                 example: "Cartão de Crédito"
+ *               totalPedido:
+ *                 type: number
+ *                 format: float
+ *                 example: 99.99
+ *               observacoes:
+ *                 type: string
+ *                 example: "Entregar após as 18h"
+ *               itensPedido:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     produto:
+ *                       type: string
+ *                       example: "Camiseta"
+ *                     quantidade:
+ *                       type: integer
+ *                       example: 2
+ *                     precoUnitario:
+ *                       type: number
+ *                       format: float
+ *                       example: 49.99
+ *               subtotalPorItem:
+ *                 type: array
+ *                 items:
+ *                   type: number
+ *                   format: float
+ *                   example: 99.98
+ *               tipoPedido:
+ *                 type: string
+ *                 example: "Entrega"
+ *               enderecoEntrega:
+ *                 type: string
+ *                 example: "Rua das Flores, 123"
+ *     responses:
+ *       200:
+ *         description: Pedido atualizado parcialmente com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Pedido atualizado parcialmente com sucesso
+ *       400:
+ *         description: Nenhum campo fornecido para atualização
+ *       404:
+ *         description: Pedido não encontrado
+ *       500:
+ *         description: Erro ao atualizar o pedido parcialmente
+ */
 router.patch('/:id', (req, res) => {
   const { id } = req.params;
   const fields = req.body;
@@ -175,7 +364,6 @@ router.patch('/:id', (req, res) => {
     return res.status(400).json({ error: 'Nenhum campo fornecido para atualização' });
   }
 
-  // Tratar itensPedido e subtotalPorItem se vierem para garantir que sejam JSON string
   const updatedKeys = keys.map((key, index) => {
     if (key === 'itensPedido' || key === 'subtotalPorItem') {
       values[index] = JSON.stringify(values[index]);
@@ -199,7 +387,35 @@ router.patch('/:id', (req, res) => {
   );
 });
 
-/* DELETE /pedidos/:id - Deletar um pedido */
+/**
+ * @swagger
+ * /pedidos/{id}:
+ *   delete:
+ *     summary: Remove um pedido pelo ID
+ *     tags: [Pedidos]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do pedido
+ *     responses:
+ *       200:
+ *         description: Pedido deletado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Pedido deletado com sucesso
+ *       404:
+ *         description: Pedido não encontrado
+ *       500:
+ *         description: Erro ao deletar o pedido
+ */
 router.delete('/:id', (req, res) => {
   const { id } = req.params;
 
@@ -214,5 +430,90 @@ router.delete('/:id', (req, res) => {
     res.status(200).json({ message: 'Pedido deletado com sucesso' });
   });
 });
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     PedidoInput:
+ *       type: object
+ *       required:
+ *         - cliente
+ *         - statusPedido
+ *         - formaPagamento
+ *         - totalPedido
+ *         - itensPedido
+ *       properties:
+ *         dataHora:
+ *           type: string
+ *           format: date-time
+ *           description: Data e hora do pedido (opcional, pode ser gerado no servidor)
+ *           example: "2023-01-01T12:00:00Z"
+ *         cliente:
+ *           type: string
+ *           description: Nome do cliente
+ *           example: "João Silva"
+ *         statusPedido:
+ *           type: string
+ *           description: Status atual do pedido
+ *           example: "Em andamento"
+ *           enum: ["Novo", "Em andamento", "Pronto", "Entregue", "Cancelado"]
+ *         formaPagamento:
+ *           type: string
+ *           description: Forma de pagamento
+ *           example: "Cartão de Crédito"
+ *           enum: ["Dinheiro", "Cartão de Crédito", "Cartão de Débito", "PIX", "Transferência"]
+ *         totalPedido:
+ *           type: number
+ *           format: float
+ *           description: Valor total do pedido
+ *           example: 99.99
+ *         observacoes:
+ *           type: string
+ *           description: Observações adicionais sobre o pedido
+ *           example: "Entregar após as 18h"
+ *         itensPedido:
+ *           type: array
+ *           description: Lista de itens do pedido (armazenado como JSON)
+ *           items:
+ *             type: object
+ *             properties:
+ *               produto:
+ *                 type: string
+ *                 example: "Camiseta"
+ *               quantidade:
+ *                 type: integer
+ *                 example: 2
+ *               precoUnitario:
+ *                 type: number
+ *                 format: float
+ *                 example: 49.99
+ *         subtotalPorItem:
+ *           type: array
+ *           description: Subtotal por item (armazenado como JSON)
+ *           items:
+ *             type: number
+ *             format: float
+ *             example: 99.98
+ *         tipoPedido:
+ *           type: string
+ *           description: Tipo do pedido
+ *           example: "Entrega"
+ *           enum: ["Retirada", "Entrega", "Mesa"]
+ *         enderecoEntrega:
+ *           type: string
+ *           description: Endereço de entrega (se aplicável)
+ *           example: "Rua das Flores, 123"
+ * 
+ *     Pedido:
+ *       allOf:
+ *         - $ref: '#/components/schemas/PedidoInput'
+ *         - type: object
+ *           properties:
+ *             id:
+ *               type: integer
+ *               description: ID autoincrementado do pedido
+ *               example: 1
+ */
 
 module.exports = router;

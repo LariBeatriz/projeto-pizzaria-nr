@@ -1,3 +1,10 @@
+/**
+ * @swagger
+ * tags:
+ *   name: Produtos
+ *   description: Endpoints para gerenciar produtos
+ */
+
 var express = require('express');
 var router = express.Router();
 var sqlite3 = require('sqlite3');
@@ -23,12 +30,36 @@ db.run(`
   }
 });
 
-/* POST /produtos - Criar um novo produto */
+/**
+ * @swagger
+ * /produtos:
+ *   post:
+ *     summary: Cria um novo produto
+ *     tags: [Produtos]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ProdutoInput'
+ *     responses:
+ *       201:
+ *         description: Produto criado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Produto criado com sucesso
+ *       500:
+ *         description: Erro ao criar o produto
+ */
 router.post('/', (req, res) => {
   console.log(req.body);
   const { nome, descricao, categoria, preco, tamanho } = req.body;
 
-  // Inserir no banco de dados
   db.run(
     `INSERT INTO produtos (nome, descricao, categoria, preco, tamanho) VALUES (?, ?, ?, ?, ?)`,
     [nome, descricao, categoria, preco, tamanho],
@@ -43,7 +74,24 @@ router.post('/', (req, res) => {
   );
 });
 
-/* GET /produtos - Listar todos os produtos */
+/**
+ * @swagger
+ * /produtos:
+ *   get:
+ *     summary: Lista todos os produtos
+ *     tags: [Produtos]
+ *     responses:
+ *       200:
+ *         description: Lista de produtos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Produto'
+ *       500:
+ *         description: Erro ao buscar produtos
+ */
 router.get('/', (req, res) => {
   db.all(`SELECT * FROM produtos`, (err, produtos) => {
     if (err) {
@@ -55,7 +103,31 @@ router.get('/', (req, res) => {
   });
 });
 
-/* GET /produtos/:id - Buscar um produto pelo ID */
+/**
+ * @swagger
+ * /produtos/{id}:
+ *   get:
+ *     summary: Obtém um produto pelo ID
+ *     tags: [Produtos]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do produto
+ *     responses:
+ *       200:
+ *         description: Dados do produto
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Produto'
+ *       404:
+ *         description: Produto não encontrado
+ *       500:
+ *         description: Erro ao buscar o produto
+ */
 router.get('/:id', (req, res) => {
   const { id } = req.params;
 
@@ -71,7 +143,41 @@ router.get('/:id', (req, res) => {
   });
 });
 
-/* PUT /produtos/:id - Atualizar todos os dados de um produto */
+/**
+ * @swagger
+ * /produtos/{id}:
+ *   put:
+ *     summary: Atualiza todos os dados de um produto
+ *     tags: [Produtos]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do produto
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ProdutoInput'
+ *     responses:
+ *       200:
+ *         description: Produto atualizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Produto atualizado com sucesso
+ *       404:
+ *         description: Produto não encontrado
+ *       500:
+ *         description: Erro ao atualizar o produto
+ */
 router.put('/:id', (req, res) => {
   const { id } = req.params;
   const { nome, descricao, categoria, preco, tamanho } = req.body;
@@ -92,7 +198,60 @@ router.put('/:id', (req, res) => {
   );
 });
 
-/* PATCH /produtos/:id - Atualização parcial */
+/**
+ * @swagger
+ * /produtos/{id}:
+ *   patch:
+ *     summary: Atualiza parcialmente os dados de um produto
+ *     tags: [Produtos]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do produto
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nome:
+ *                 type: string
+ *                 example: Camiseta Premium
+ *               descricao:
+ *                 type: string
+ *                 example: Camiseta de algodão 100%
+ *               categoria:
+ *                 type: string
+ *                 example: Vestuário
+ *               preco:
+ *                 type: number
+ *                 format: float
+ *                 example: 99.90
+ *               tamanho:
+ *                 type: string
+ *                 example: G
+ *     responses:
+ *       200:
+ *         description: Produto atualizado parcialmente com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Produto atualizado parcialmente com sucesso
+ *       400:
+ *         description: Nenhum campo fornecido para atualização
+ *       404:
+ *         description: Produto não encontrado
+ *       500:
+ *         description: Erro ao atualizar o produto parcialmente
+ */
 router.patch('/:id', (req, res) => {
   const { id } = req.params;
   const fields = req.body;
@@ -103,7 +262,6 @@ router.patch('/:id', (req, res) => {
     return res.status(400).json({ error: 'Nenhum campo fornecido para atualização' });
   }
 
-  // Criar a parte dinâmica da query
   const setClause = keys.map((key) => `${key} = ?`).join(', ');
 
   db.run(
@@ -122,7 +280,35 @@ router.patch('/:id', (req, res) => {
   );
 });
 
-/* DELETE /produtos/:id - Deletar um produto */
+/**
+ * @swagger
+ * /produtos/{id}:
+ *   delete:
+ *     summary: Remove um produto pelo ID
+ *     tags: [Produtos]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do produto
+ *     responses:
+ *       200:
+ *         description: Produto deletado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Produto deletado com sucesso
+ *       404:
+ *         description: Produto não encontrado
+ *       500:
+ *         description: Erro ao deletar o produto
+ */
 router.delete('/:id', (req, res) => {
   const { id } = req.params;
 
@@ -137,5 +323,48 @@ router.delete('/:id', (req, res) => {
     res.status(200).json({ message: 'Produto deletado com sucesso' });
   });
 });
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     ProdutoInput:
+ *       type: object
+ *       required:
+ *         - nome
+ *         - preco
+ *       properties:
+ *         nome:
+ *           type: string
+ *           description: Nome do produto
+ *           example: Camiseta
+ *         descricao:
+ *           type: string
+ *           description: Descrição detalhada do produto
+ *           example: Camiseta de algodão 100% puro
+ *         categoria:
+ *           type: string
+ *           description: Categoria do produto
+ *           example: Vestuário
+ *         preco:
+ *           type: number
+ *           format: float
+ *           description: Preço do produto
+ *           example: 49.90
+ *         tamanho:
+ *           type: string
+ *           description: Tamanho do produto (se aplicável)
+ *           example: M
+ * 
+ *     Produto:
+ *       allOf:
+ *         - $ref: '#/components/schemas/ProdutoInput'
+ *         - type: object
+ *           properties:
+ *             id:
+ *               type: integer
+ *               description: ID autoincrementado do produto
+ *               example: 1
+ */
 
 module.exports = router;
