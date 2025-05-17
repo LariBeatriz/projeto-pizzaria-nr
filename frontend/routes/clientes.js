@@ -1,8 +1,8 @@
 var express = require('express');
 var router = express.Router();
-const url = "https://xj416h9k-4000.brs.devtunnels.ms/users/";
+const url = "https://xj416h9k-4000.brs.devtunnels.ms/clientes/";
 
-/* GET users listing. */
+/* GET clientes listing. */
 router.get('/', function(req, res, next) {
   
   fetch(url, { method: 'GET' })
@@ -13,27 +13,27 @@ router.get('/', function(req, res, next) {
       }
       return res.json();
     })
-    .then((users) => {
-      let title = "Gestão de Usuários";
-      let cols = ["ID", "Nome", "Senha", "Email", "Telefone", "Ações"];
-      res.render('layout', { body: "pages/users", title, users, cols, error: "" });
+    .then((clientes) => {
+      let title = "Gestão de Clientes";
+      let cols = ["ID", "Nome", "Email", "Data de Nascimento", "Contato", "CEP", "Logradouro", "Complemento", "Bairro", "Estado", "Ações"];
+      res.render('layout', { body: "pages/clientes", title, clientes, cols, error: "" });
     })
     .catch((error) => {
       console.log('Erro', error);
-      res.render('layout', { body: "pages/users", title: "Gestão de Usuários", error });
+      res.render('layout', { body: "pages/clientes", title, error });
     });
 
 });
 
-/* POST new user. */
+/* POST new cliente. */
 router.post("/", (req, res) => {
 
-  const { username, password, email, phone } = req.body;
+  const { nome, email, data_nascimento, contato, cep, logradouro, complemento, bairro, estado } = req.body;
 
-  fetch(url + "/register", {
+  fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password, email, phone })
+    body: JSON.stringify({ nome, email, data_nascimento, contato, cep, logradouro, complemento, bairro, estado })
   })
     .then(async (res) => {
       if (!res.ok) {
@@ -42,8 +42,8 @@ router.post("/", (req, res) => {
       }
       return res.json();
     })
-    .then((user) => {
-      res.send(user);
+    .then((cliente) => {
+      res.send(cliente);
     })
     .catch((error) => {
       res.status(500).send(error);
@@ -51,16 +51,16 @@ router.post("/", (req, res) => {
 
 });
 
-/* UPDATE user. */
+/* UPDATE cliente. */
 router.put("/:id", (req, res) => {
 
   const { id } = req.params;
-  const { username, password, email, phone } = req.body;
+  const { nome, email, data_nascimento, contato, cep, logradouro, complemento, bairro, estado } = req.body;
 
   fetch(url + id, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password, email, phone })
+    body: JSON.stringify({ nome, email, data_nascimento, contato, cep, logradouro, complemento, bairro, estado })
   })
     .then(async (res) => {
       if (!res.ok) {
@@ -69,8 +69,8 @@ router.put("/:id", (req, res) => {
       }
       return res.json();
     })
-    .then((user) => {
-      res.send(user);
+    .then((cliente) => {
+      res.send(cliente);
     })
     .catch((error) => {
       res.status(500).send(error);
@@ -78,7 +78,7 @@ router.put("/:id", (req, res) => {
 
 });
 
-/* DELETE user. */
+/* DELETE cliente. */
 router.delete("/:id", (req, res) => {
 
   const { id } = req.params;
@@ -93,8 +93,8 @@ router.delete("/:id", (req, res) => {
       }
       return res.json();
     })
-    .then((user) => {
-      res.send(user);
+    .then((cliente) => {
+      res.send(cliente);
     })
     .catch((error) => {
       res.status(500).send(error);
@@ -102,7 +102,7 @@ router.delete("/:id", (req, res) => {
 
 });
 
-/* GET user by ID. */
+/* GET cliente by ID. */
 router.get("/:id", (req, res) => {
 
   const { id } = req.params;
@@ -118,8 +118,8 @@ router.get("/:id", (req, res) => {
       }
       return res.json();
     })
-    .then((user) => {
-      res.send(user);
+    .then((cliente) => {
+      res.send(cliente);
     })
     .catch((error) => {
       res.status(500).send(error);

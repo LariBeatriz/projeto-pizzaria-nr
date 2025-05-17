@@ -1,0 +1,149 @@
+<h1>
+    <%= title %>
+</h1>
+
+<form id="clienteForm">
+  <input required type="hidden" name="id" id="id">
+
+  <label for="nome">Nome</label>
+  <input required name="nome" id="nome" type="text"><br>
+
+  <label for="email">Email</label>
+  <input required name="email" id="email" type="email"><br>
+
+  <label for="data_nascimento">Data de Nascimento</label>
+  <input required name="data_nascimento" id="data_nascimento" type="date"><br>
+
+  <label for="contato">Contato</label>
+  <input required name="contato" id="contato" type="text"><br>
+
+  <label for="cep">CEP</label>
+  <input required name="cep" id="cep" type="text"><br>
+
+  <label for="logradouro">Logradouro</label>
+  <input required name="logradouro" id="logradouro" type="text"><br>
+
+  <label for="complemento">Complemento</label>
+  <input name="complemento" id="complemento" type="text"><br>
+
+  <label for="bairro">Bairro</label>
+  <input required name="bairro" id="bairro" type="text"><br>
+
+  <label for="estado">Estado</label>
+  <input required name="estado" id="estado" type="text"><br>
+
+  <button type="submit">Enviar</button>
+  <button type="reset">Cancelar</button>
+</form>
+
+<span id="error"></span>
+
+<% if (error) { %>
+    <span><%= error %></span>
+<% } %>
+
+<table>
+    <thead>
+        <tr>
+            <% for(let col of cols) { %>
+                <th><%= col %></th>
+            <% } %>
+        </tr>
+    </thead>
+    <tbody>
+        <% for(let cliente of clientes) { %>
+            <tr>
+                <% for(let prop in cliente) { %>
+                    <td>
+                        <%= cliente[prop] %>
+                    </td>
+                <% } %>
+                <td>
+                    <button onclick="editCliente('<%= cliente.id %>')">Editar</button>
+                    <button onclick="deleteCliente('<%= cliente.id %>')">Deletar</button>
+                </td>
+            </tr>
+        <% } %>
+    </tbody>
+</table>
+
+<script>
+    // Evento de clique no botão Editar
+    const form = document.getElementById('clienteForm');
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const cliente = mountDataForm();
+
+        let id = cliente.id;
+        let METHOD = id ? 'PUT' : 'POST';
+        let URL = id ? `/clientes/${id}` : '/clientes';
+
+        createOrUpdate(cliente, URL, METHOD);
+    });
+
+    // Ccriar ou atualizar cliente
+    function createOrUpdate(cliente, URL, METHOD) {
+        console.log(cliente);
+
+        fetch(URL, {
+            method: METHOD,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(cliente)
+        })
+        .then(async(res) => { return await checkError(res) })
+        .then((cliente) => { 
+            form.reset();
+            window.location.reload();
+        })
+        .catch((error) => { 
+            document.getElementById('error').innerText = error.message || JSON.stringify(error);
+        });
+    }
+    
+    // Buscar cliente pelo id e carregar no formulário
+    function editCliente(id) {
+        fetch("/clientes/" + id, {
+            method: "GET"
+        })
+        .then(async (res) => { return await checkError(res) })
+        .then(cliente => {
+            console.log('retornou o cliente', cliente) 
+            for (let prop in cliente) {
+                const input = document.querySelector(`input[name="${prop}"]`);
+                input.value = cliente[prop];
+            }
+        })
+        .catch(error => { document.getElementById('error').innerText = error });
+    }
+
+    // Deletar cliente pelo id
+    function deleteCliente(id) {
+        fetch("/clientes/" + id, {
+        method: "DELETE"
+        })
+        .then(async (res) => { return await checkError(res) })
+        .then((cliente) => {
+            window.location.reload();
+        })
+        .catch((error) => { document.getElementById('error').innerText = error });
+    }
+
+    // Checar erro na resposta da requisição
+    async function checkError(res) {
+        if (!res.ok) {
+                const err = await res.json();
+                throw err;
+            }
+            return res.json();
+    }
+
+    // Montar dados do formulário usando FormData
+    function mountDataForm() {
+        const formData = new FormData(form);
+        const cliente = {};
+        formData.forEach((v, k) => {
+            cliente[k] = v;
+        });
+        return cliente;
+    }
+</script>
