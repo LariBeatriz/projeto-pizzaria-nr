@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-const url = "https://xj416h9k-4000.brs.devtunnels.ms/clientes/";
+const url = "http://localhost:3000/clientes/";
 
 /* GET clientes listing. */
 router.get('/', function(req, res, next) {
