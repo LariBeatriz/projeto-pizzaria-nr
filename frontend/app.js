@@ -12,12 +12,14 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var clientesRouter = require('./routes/clientes');
 var produtosRouter = require('./routes/produtos');
+var pedidosRouter = require('./routes/pedidos');
 
 // DEFININDO ENDPOINT PARA AS ROTAS IMPORTADAS
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/clientes', clientesRouter);
 app.use('/produtos', produtosRouter);
+app.use('/pedidos', pedidosRouter);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

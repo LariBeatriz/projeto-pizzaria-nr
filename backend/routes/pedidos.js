@@ -78,7 +78,7 @@ router.post('/', (req, res) => {
     `INSERT INTO pedidos (
       dataHora, cliente, statusPedido, formaPagamento, totalPedido, observacoes,
       itensPedido, tipoPedido, enderecoEntrega
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       dataHora,
       cliente,
