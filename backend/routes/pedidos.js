@@ -22,8 +22,7 @@ db.run(`
     formaPagamento TEXT,
     totalPedido REAL,
     observacoes TEXT,
-    itensPedido TEXT, -- armazenamos como JSON string
-    subtotalPorItem TEXT, -- armazenamos como JSON string
+    itensPedido TEXT,
     tipoPedido TEXT,
     enderecoEntrega TEXT
   )
@@ -71,7 +70,6 @@ router.post('/', (req, res) => {
     totalPedido,
     observacoes,
     itensPedido,
-    subtotalPorItem,
     tipoPedido,
     enderecoEntrega
   } = req.body;
@@ -79,8 +77,8 @@ router.post('/', (req, res) => {
   db.run(
     `INSERT INTO pedidos (
       dataHora, cliente, statusPedido, formaPagamento, totalPedido, observacoes,
-      itensPedido, subtotalPorItem, tipoPedido, enderecoEntrega
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      itensPedido, tipoPedido, enderecoEntrega
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       dataHora,
       cliente,
@@ -89,7 +87,6 @@ router.post('/', (req, res) => {
       totalPedido,
       observacoes,
       JSON.stringify(itensPedido),
-      JSON.stringify(subtotalPorItem),
       tipoPedido,
       enderecoEntrega
     ],
@@ -131,7 +128,6 @@ router.get('/', (req, res) => {
       const pedidosFormatados = pedidos.map((pedido) => ({
         ...pedido,
         itensPedido: JSON.parse(pedido.itensPedido || '[]'),
-        subtotalPorItem: JSON.parse(pedido.subtotalPorItem || '[]')
       }));
       res.status(200).send(pedidosFormatados);
     }
@@ -175,7 +171,6 @@ router.get('/:id', (req, res) => {
       return res.status(404).json({ error: 'Pedido não encontrado' });
     }
     row.itensPedido = JSON.parse(row.itensPedido || '[]');
-    row.subtotalPorItem = JSON.parse(row.subtotalPorItem || '[]');
     res.status(200).json(row);
   });
 });
@@ -225,7 +220,6 @@ router.put('/:id', (req, res) => {
     totalPedido,
     observacoes,
     itensPedido,
-    subtotalPorItem,
     tipoPedido,
     enderecoEntrega
   } = req.body;
@@ -239,7 +233,6 @@ router.put('/:id', (req, res) => {
       totalPedido = ?,
       observacoes = ?,
       itensPedido = ?,
-      subtotalPorItem = ?,
       tipoPedido = ?,
       enderecoEntrega = ?
     WHERE id = ?`,
@@ -251,7 +244,6 @@ router.put('/:id', (req, res) => {
       totalPedido,
       observacoes,
       JSON.stringify(itensPedido),
-      JSON.stringify(subtotalPorItem),
       tipoPedido,
       enderecoEntrega,
       id
@@ -324,18 +316,6 @@ router.put('/:id', (req, res) => {
  *                       type: number
  *                       format: float
  *                       example: 49.99
- *               subtotalPorItem:
- *                 type: array
- *                 items:
- *                   type: number
- *                   format: float
- *                   example: 99.98
- *               tipoPedido:
- *                 type: string
- *                 example: "Entrega"
- *               enderecoEntrega:
- *                 type: string
- *                 example: "Rua das Flores, 123"
  *     responses:
  *       200:
  *         description: Pedido atualizado parcialmente com sucesso
@@ -365,7 +345,7 @@ router.patch('/:id', (req, res) => {
   }
 
   const updatedKeys = keys.map((key, index) => {
-    if (key === 'itensPedido' || key === 'subtotalPorItem') {
+    if (key === 'itensPedido') {
       values[index] = JSON.stringify(values[index]);
     }
     return `${key} = ?`;
@@ -488,13 +468,6 @@ router.delete('/:id', (req, res) => {
  *                 type: number
  *                 format: float
  *                 example: 49.99
- *         subtotalPorItem:
- *           type: array
- *           description: Subtotal por item (armazenado como JSON)
- *           items:
- *             type: number
- *             format: float
- *             example: 99.98
  *         tipoPedido:
  *           type: string
  *           description: Tipo do pedido

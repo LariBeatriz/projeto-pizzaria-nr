@@ -12,7 +12,7 @@ var http = require('http');
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '4000');
+var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
 /**
@@ -87,4 +87,10 @@ function onListening() {
     ? 'pipe ' + addr
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
+  
+  console.log(`
+  🚀 \x1b[1m\x1b[35m[SERVIDOR BACK]\x1b[0m \x1b[1m
+  URL: \x1b[4mhttp://localhost:${addr.port}\x1b[0m
+  PID: ${process.pid} (CTRL+C para encerrar)
+  `);
 }

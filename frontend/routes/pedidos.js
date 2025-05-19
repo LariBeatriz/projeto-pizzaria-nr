@@ -1,8 +1,8 @@
 var express = require('express');
 var router = express.Router();
-const url = "http://localhost:3000/users/";
+const url = "http://localhost:3000/pedidos/";
 
-/* GET users listing. */
+/* GET pedidos listing. */
 router.get('/', function(req, res, next) {
   
   fetch(url, { method: 'GET' })
@@ -13,27 +13,37 @@ router.get('/', function(req, res, next) {
       }
       return res.json();
     })
-    .then((users) => {
-      let title = "Gestão de Usuários";
-      let cols = ["ID", "Nome", "Senha", "Email", "Telefone", "Ações"];
-      res.render('layout', { body: "pages/users", title, users, cols, error: "" });
+    .then((pedidos) => {
+      let title = "Gestão de Pedidos";
+      let cols = ["ID", 
+                  "Data e Hora",
+                  "Nome do Cliente",
+                  "Status do Pedido",
+                  "Forma de Pagamento",
+                  "Total do Pedido",
+                  "Observações",
+                  "Itens do Pedido",
+                  "Tipo do Pedido",
+                  "Endereço de Entrega",
+                  "Ações"];
+      res.render('layout', { body: "pages/pedidos", title, pedidos, cols, error: "" });
     })
     .catch((error) => {
       console.log('Erro', error);
-      res.render('layout', { body: "pages/users", title: "Gestão de Usuários", error });
+      res.render('layout', { body: "pages/pedidos", title, error });
     });
 
 });
 
-/* POST new user. */
+/* POST new pedido. */
 router.post("/", (req, res) => {
 
-  const { username, password, email, phone } = req.body;
+  const { dataHora, cliente, statusPedido, formaPagamento, totalPedido, observacoes, itensPedido, tipoPedido, enderecoEntrega } = req.body;
 
-  fetch(url + "/register", {
+  fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password, email, phone })
+    body: JSON.stringify({ dataHora, cliente, statusPedido, formaPagamento, totalPedido, observacoes, itensPedido, tipoPedido, enderecoEntrega })
   })
     .then(async (res) => {
       if (!res.ok) {
@@ -42,8 +52,8 @@ router.post("/", (req, res) => {
       }
       return res.json();
     })
-    .then((user) => {
-      res.send(user);
+    .then((pedido) => {
+      res.send(pedido);
     })
     .catch((error) => {
       res.status(500).send(error);
@@ -51,16 +61,16 @@ router.post("/", (req, res) => {
 
 });
 
-/* UPDATE user. */
+/* UPDATE pedido. */
 router.put("/:id", (req, res) => {
 
   const { id } = req.params;
-  const { username, password, email, phone } = req.body;
+  const { dataHora, cliente, statusPedido, formaPagamento, totalPedido, observacoes, itensPedido, tipoPedido, enderecoEntrega } = req.body;
 
   fetch(url + id, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password, email, phone })
+    body: JSON.stringify({ dataHora, cliente, statusPedido, formaPagamento, totalPedido, observacoes, itensPedido, tipoPedido, enderecoEntrega })
   })
     .then(async (res) => {
       if (!res.ok) {
@@ -69,8 +79,8 @@ router.put("/:id", (req, res) => {
       }
       return res.json();
     })
-    .then((user) => {
-      res.send(user);
+    .then((pedido) => {
+      res.send(pedido);
     })
     .catch((error) => {
       res.status(500).send(error);
@@ -78,7 +88,7 @@ router.put("/:id", (req, res) => {
 
 });
 
-/* DELETE user. */
+/* DELETE pedido. */
 router.delete("/:id", (req, res) => {
 
   const { id } = req.params;
@@ -93,8 +103,8 @@ router.delete("/:id", (req, res) => {
       }
       return res.json();
     })
-    .then((user) => {
-      res.send(user);
+    .then((pedido) => {
+      res.send(pedido);
     })
     .catch((error) => {
       res.status(500).send(error);
@@ -102,7 +112,7 @@ router.delete("/:id", (req, res) => {
 
 });
 
-/* GET user by ID. */
+/* GET pedido by ID. */
 router.get("/:id", (req, res) => {
 
   const { id } = req.params;
@@ -118,8 +128,8 @@ router.get("/:id", (req, res) => {
       }
       return res.json();
     })
-    .then((user) => {
-      res.send(user);
+    .then((pedido) => {
+      res.send(pedido);
     })
     .catch((error) => {
       res.status(500).send(error);

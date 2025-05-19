@@ -1,8 +1,8 @@
 var express = require('express');
 var router = express.Router();
-const url = "http://localhost:3000/users/";
+const url = "http://localhost:3000/produtos/";
 
-/* GET users listing. */
+/* GET produtos listing. */
 router.get('/', function(req, res, next) {
   
   fetch(url, { method: 'GET' })
@@ -13,27 +13,27 @@ router.get('/', function(req, res, next) {
       }
       return res.json();
     })
-    .then((users) => {
-      let title = "Gestão de Usuários";
-      let cols = ["ID", "Nome", "Senha", "Email", "Telefone", "Ações"];
-      res.render('layout', { body: "pages/users", title, users, cols, error: "" });
+    .then((produtos) => {
+      let title = "Gestão de Produtos";
+      let cols = ["ID", "Nome", "Descrição", "Categoria", "Preço", "Tamanho", "Ações"];
+      res.render('layout', { body: "pages/produtos", title, produtos, cols, error: "" });
     })
     .catch((error) => {
       console.log('Erro', error);
-      res.render('layout', { body: "pages/users", title: "Gestão de Usuários", error });
+      res.render('layout', { body: "pages/produtos", title, error });
     });
 
 });
 
-/* POST new user. */
+/* POST new produto. */
 router.post("/", (req, res) => {
 
-  const { username, password, email, phone } = req.body;
+  const { nome, descricao, categoria, preco, tamanho } = req.body;
 
-  fetch(url + "/register", {
+  fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password, email, phone })
+    body: JSON.stringify({ nome, descricao, categoria, preco, tamanho })
   })
     .then(async (res) => {
       if (!res.ok) {
@@ -42,8 +42,8 @@ router.post("/", (req, res) => {
       }
       return res.json();
     })
-    .then((user) => {
-      res.send(user);
+    .then((produto) => {
+      res.send(produto);
     })
     .catch((error) => {
       res.status(500).send(error);
@@ -51,16 +51,16 @@ router.post("/", (req, res) => {
 
 });
 
-/* UPDATE user. */
+/* UPDATE produto. */
 router.put("/:id", (req, res) => {
 
   const { id } = req.params;
-  const { username, password, email, phone } = req.body;
+  const { nome, descricao, categoria, preco, tamanho } = req.body;
 
   fetch(url + id, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password, email, phone })
+    body: JSON.stringify({ nome, descricao, categoria, preco, tamanho })
   })
     .then(async (res) => {
       if (!res.ok) {
@@ -69,8 +69,8 @@ router.put("/:id", (req, res) => {
       }
       return res.json();
     })
-    .then((user) => {
-      res.send(user);
+    .then((produto) => {
+      res.send(produto);
     })
     .catch((error) => {
       res.status(500).send(error);
@@ -78,7 +78,7 @@ router.put("/:id", (req, res) => {
 
 });
 
-/* DELETE user. */
+/* DELETE produto. */
 router.delete("/:id", (req, res) => {
 
   const { id } = req.params;
@@ -93,8 +93,8 @@ router.delete("/:id", (req, res) => {
       }
       return res.json();
     })
-    .then((user) => {
-      res.send(user);
+    .then((produto) => {
+      res.send(produto);
     })
     .catch((error) => {
       res.status(500).send(error);
@@ -102,7 +102,7 @@ router.delete("/:id", (req, res) => {
 
 });
 
-/* GET user by ID. */
+/* GET produto by ID. */
 router.get("/:id", (req, res) => {
 
   const { id } = req.params;
@@ -118,8 +118,8 @@ router.get("/:id", (req, res) => {
       }
       return res.json();
     })
-    .then((user) => {
-      res.send(user);
+    .then((produto) => {
+      res.send(produto);
     })
     .catch((error) => {
       res.status(500).send(error);
