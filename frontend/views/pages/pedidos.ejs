@@ -1,169 +1,204 @@
-<h1>
-    <%= title %>
-</h1>
+<h1><%= title %></h1>
 
 <form id="pedidoForm">
-  <input required type="hidden" name="id" id="id">
+  <input type="hidden" name="id" id="id" />
 
   <label for="dataHora">Data</label>
-  <input required name="dataHora" id="dataHora" type="text"><br>
+  <input required name="dataHora" id="dataHora" type="text" /><br />
 
   <label for="cliente">Nome do Cliente</label>
-  <input required name="cliente" id="cliente" type="text"><br>
+  <input required name="cliente" id="cliente" type="text" /><br />
 
   <label for="statusPedido">Status do Pedido</label>
-  <input required name="statusPedido" id="statusPedido" type="text"><br>
+  <select required name="statusPedido" id="statusPedido">
+    <option value="">Selecione</option>
+    <option value="Em preparo">Em preparo</option>
+    <option value="Pronto para entrega">Pronto para entrega</option>
+    <option value="Saiu para entrega">Saiu para entrega</option>
+    <option value="Entregue">Entregue</option>
+    <option value="Cancelado">Cancelado</option>
+  </select><br />
 
   <label for="formaPagamento">Forma de Pagamento</label>
-  <input required name="formaPagamento" id="formaPagamento" type="text"><br>
+  <input required name="formaPagamento" id="formaPagamento" type="text" /><br />
 
   <label for="totalPedido">Total do Pedido</label>
-  <input required name="totalPedido" id="totalPedido" type="text"><br>
+  <input required name="totalPedido" id="totalPedido" type="text" readonly /><br />
 
   <label for="observacoes">Observações</label>
-  <input required name="observacoes" id="observacoes" type="text"><br>
+  <input name="observacoes" id="observacoes" type="text" /><br />
 
   <label for="itensPedido">Itens do Pedido</label>
-  <input name="itensPedido" id="itensPedido" type="text"><br>
+  <select name="itensPedido" id="itensPedido" class="browser-default" multiple required onchange="calcularTotal()">
+    <!-- opções serão carregadas via JS -->
+  </select><br />
 
   <label for="tipoPedido">Tipo do Pedido</label>
-  <input required name="tipoPedido" id="tipoPedido" type="text"><br>
+  <input required name="tipoPedido" id="tipoPedido" type="text" /><br />
 
   <label for="enderecoEntrega">Endereço de Entrega</label>
-  <input required name="enderecoEntrega" id="enderecoEntrega" type="text"><br>
+  <input name="enderecoEntrega" id="enderecoEntrega" type="text" /><br />
 
   <button type="submit">Enviar</button>
   <button type="reset">Cancelar</button>
 </form>
 
 <span id="error"></span>
-
-<% if (error) { %>
-    <span><%= error %></span>
-<% } %>
+<% if (error) { %><span><%= error %></span><% } %>
 
 <table>
-    <thead>
-        <tr>
-            <% for(let col of cols) { %>
-                <th><%= col %></th>
-            <% } %>
-        </tr>
-    </thead>
-    <tbody>
-        <% for(let pedido of pedidos) { %>
-            <tr>
-                <td><%= pedido.id %></td>
-                <td><%= pedido.dataHora %></td>
-                <td><%= pedido.cliente %></td>
-                <td><%= pedido.statusPedido %></td>
-                <td><%= pedido.formaPagamento %></td>
-                <td><%= pedido.totalPedido %></td>
-                <td><%= pedido.observacoes %></td>
-                <td>
-                    <% if (Array.isArray(pedido.itensPedido)) { %>
-                        <%= pedido.itensPedido.map(item => typeof item === 'string' ? item : JSON.stringify(item)).join(', ') %>
-                    <% } else { %>
-                        <%= pedido.itensPedido %>
-                    <% } %>
-                </td>
-                <td><%= pedido.tipoPedido %></td>
-                <td><%= pedido.enderecoEntrega %></td>
-                <td>
-                    <button onclick="editPedido('<%= pedido.id %>')">Editar</button>
-                    <button onclick="deletePedido('<%= pedido.id %>')">Deletar</button>
-                </td>
-            </tr>
-        <% } %>
-    </tbody>
+  <thead>
+    <tr>
+      <% for(let col of cols) { %><th><%= col %></th><% } %>
+    </tr>
+  </thead>
+  <tbody>
+    <% for(let pedido of pedidos) { %>
+      <tr>
+        <td><%= pedido.id %></td>
+        <td><%= pedido.dataHora %></td>
+        <td><%= pedido.cliente %></td>
+        <td><%= pedido.statusPedido %></td>
+        <td><%= pedido.formaPagamento %></td>
+        <td><%= pedido.totalPedido %></td>
+        <td><%= pedido.observacoes %></td>
+        <td>
+          <% if (Array.isArray(pedido.itensPedido)) { %>
+            <%= pedido.itensPedido.map(item => typeof item === 'string' ? item : JSON.stringify(item)).join(', ') %>
+          <% } else { %>
+            <%= pedido.itensPedido %>
+          <% } %>
+        </td>
+        <td><%= pedido.tipoPedido %></td>
+        <td><%= pedido.enderecoEntrega %></td>
+        <td>
+          <button onclick="editPedido('<%= pedido.id %>')">Editar</button>
+          <button onclick="deletePedido('<%= pedido.id %>')">Deletar</button>
+        </td>
+      </tr>
+    <% } %>
+  </tbody>
 </table>
 
+<!-- Máscaras e scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/imask/6.4.2/imask.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
 <script>
-    // Evento de clique no botão Editar
-    const form = document.getElementById('pedidoForm');
-    form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const pedido = mountDataForm();
+  const form = document.getElementById('pedidoForm');
 
-        let id = pedido.id;
-        let METHOD = id ? 'PUT' : 'POST';
-        let URL = id ? `/pedidos/${id}` : '/pedidos';
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const pedido = mountDataForm();
+    const id = pedido.id;
+    const METHOD = id ? 'PUT' : 'POST';
+    const URL = id ? `/pedidos/${id}` : '/pedidos';
 
-        createOrUpdate(pedido, URL, METHOD);
+    fetch(URL, {
+      method: METHOD,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(pedido)
+    })
+    .then(async (res) => await checkError(res))
+    .then(() => {
+      form.reset();
+      window.location.reload();
+    })
+    .catch((error) => {
+      document.getElementById('error').innerText = error.message || JSON.stringify(error);
     });
+  });
 
-    // Ccriar ou atualizar pedido
-    function createOrUpdate(pedido, URL, METHOD) {
-        console.log(pedido);
-
-        fetch(URL, {
-            method: METHOD,
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(pedido)
-        })
-        .then(async(res) => { return await checkError(res) })
-        .then((pedido) => { 
-            form.reset();
-            window.location.reload();
-        })
-        .catch((error) => { 
-            document.getElementById('error').innerText = error.message || JSON.stringify(error);
-        });
-    }
-    
-    // Buscar pedido pelo id e carregar no formulário
-    function editPedido(id) {
-        fetch("/pedidos/" + id, {
-            method: "GET"
-        })
-        .then(async (res) => { return await checkError(res) })
-        .then(pedido => {
-            console.log('retornou o pedido', pedido) 
-            for (let prop in pedido) {
-                const input = document.querySelector(`input[name="${prop}"]`);
-                input.value = pedido[prop];
+  function editPedido(id) {
+    fetch("/pedidos/" + id)
+      .then(async (res) => await checkError(res))
+      .then(pedido => {
+        for (let prop in pedido) {
+          const input = document.querySelector(`[name="${prop}"]`);
+          if (input && input.tagName === 'SELECT' && input.multiple) {
+            for (const option of input.options) {
+              option.selected = pedido[prop].includes(option.value);
             }
-        })
-        .catch(error => { document.getElementById('error').innerText = error });
-    }
+          } else if (input) {
+            input.value = pedido[prop];
+          }
+        }
+        calcularTotal();
+      })
+      .catch(error => document.getElementById('error').innerText = error);
+  }
 
-    // Deletar pedido pelo id
-    function deletePedido(id) {
-        fetch("/pedidos/" + id, {
-        method: "DELETE"
-        })
-        .then(async (res) => { return await checkError(res) })
-        .then((pedido) => {
-            window.location.reload();
-        })
-        .catch((error) => { document.getElementById('error').innerText = error });
-    }
+  function deletePedido(id) {
+    fetch("/pedidos/" + id, { method: "DELETE" })
+      .then(async (res) => await checkError(res))
+      .then(() => window.location.reload())
+      .catch(error => document.getElementById('error').innerText = error);
+  }
 
-    // Checar erro na resposta da requisição
-    async function checkError(res) {
-        if (!res.ok) {
-                const err = await res.json();
-                throw err;
-            }
-            return res.json();
+  async function checkError(res) {
+    if (!res.ok) {
+      const err = await res.json();
+      throw err;
     }
+    return res.json();
+  }
 
-    // Montar dados do formulário usando FormData
-    function mountDataForm() {
+  function mountDataForm() {
     const formData = new FormData(form);
     const pedido = {};
     formData.forEach((v, k) => {
-        if (k === "itensPedido") {
-            // Tenta converter para array, se não for possível, envia array vazio
-            try {
-                pedido[k] = v ? JSON.parse(v) : [];
-            } catch {
-                pedido[k] = [v];
-            }
-        } else {
-            pedido[k] = v;
-        }
+      if (k === "itensPedido") {
+        const select = document.getElementById('itensPedido');
+        const selected = Array.from(select.selectedOptions).map(opt => opt.value);
+        pedido[k] = selected;
+      } else if (k === 'totalPedido') {
+        pedido[k] = parseFloat(v.replace(',', '.')) || 0;
+      } else {
+        pedido[k] = v;
+      }
     });
     return pedido;
-}
+  }
+
+  function calcularTotal() {
+    const select = document.getElementById('itensPedido');
+    let total = 0;
+    for (let opt of select.selectedOptions) {
+      const preco = parseFloat(opt.getAttribute('data-preco'));
+      if (!isNaN(preco)) total += preco;
+    }
+    document.getElementById('totalPedido').value = total.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+  }
+
+  IMask(document.getElementById('dataHora'), {
+    mask: '00/00/0000 00:00'
+  });
+
+  window.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const res = await fetch('http://localhost:3000/produtos');
+      const produtos = await res.json();
+      const select = document.getElementById('itensPedido');
+
+      produtos.forEach(prod => {
+        const precoCorrigido = parseFloat(prod.preco.toString().replace(',', '.'));
+        const opt = document.createElement('option');
+        opt.value = prod.id;
+        opt.textContent = `${prod.nome} - R$ ${precoCorrigido.toFixed(2)}`;
+        opt.setAttribute('data-preco', precoCorrigido);
+        select.appendChild(opt);
+      });
+
+      // Inicializa os selects do Materialize após preencher
+      const selects = document.querySelectorAll('select');
+      M.FormSelect.init(selects);
+
+    } catch (err) {
+      console.error('Erro ao carregar produtos:', err);
+      document.getElementById('error').innerText = "Erro ao carregar produtos.";
+    }
+  });
 </script>
