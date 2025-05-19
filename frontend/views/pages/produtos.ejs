@@ -1,0 +1,137 @@
+<h1>
+    <%= title %>
+</h1>
+
+<form id="produtoForm">
+  <input required type="hidden" name="id" id="id">
+
+  <label for="nome">Nome</label>
+  <input required name="nome" id="nome" type="text"><br>
+
+  <label for="descricao">Descrição</label>
+  <input required name="descricao" id="descricao" type="text"><br>
+
+  <label for="categoria">Categoria</label>
+  <input required name="categoria" id="categoria" type="text"><br>
+
+  <label for="preco">Preço</label>
+  <input required name="preco" id="preco" type="text"><br>
+
+  <label for="tamanho">Tamanho</label>
+  <input required name="tamanho" id="tamanho" type="text"><br>
+
+  <button type="submit">Enviar</button>
+  <button type="reset">Cancelar</button>
+</form>
+
+<span id="error"></span>
+
+<% if (error) { %>
+    <span><%= error %></span>
+<% } %>
+
+<table>
+    <thead>
+        <tr>
+            <% for(let col of cols) { %>
+                <th><%= col %></th>
+            <% } %>
+        </tr>
+    </thead>
+    <tbody>
+        <% for(let produto of produtos) { %>
+            <tr>
+                <% for(let prop in produto) { %>
+                    <td>
+                        <%= produto[prop] %>
+                    </td>
+                <% } %>
+                <td>
+                    <button onclick="editProduto('<%= produto.id %>')">Editar</button>
+                    <button onclick="deleteProduto('<%= produto.id %>')">Deletar</button>
+                </td>
+            </tr>
+        <% } %>
+    </tbody>
+</table>
+
+<script>
+    // Evento de clique no botão Editar
+    const form = document.getElementById('produtoForm');
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const produto = mountDataForm();
+
+        let id = produto.id;
+        let METHOD = id ? 'PUT' : 'POST';
+        let URL = id ? `/produtos/${id}` : '/produtos';
+
+        createOrUpdate(produto, URL, METHOD);
+    });
+
+    // Ccriar ou atualizar produto
+    function createOrUpdate(produto, URL, METHOD) {
+        console.log(produto);
+
+        fetch(URL, {
+            method: METHOD,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(produto)
+        })
+        .then(async(res) => { return await checkError(res) })
+        .then((produto) => { 
+            form.reset();
+            window.location.reload();
+        })
+        .catch((error) => { 
+            document.getElementById('error').innerText = error.message || JSON.stringify(error);
+        });
+    }
+    
+    // Buscar produto pelo id e carregar no formulário
+    function editProduto(id) {
+        fetch("/produtos/" + id, {
+            method: "GET"
+        })
+        .then(async (res) => { return await checkError(res) })
+        .then(produto => {
+            console.log('retornou o produto', produto) 
+            for (let prop in produto) {
+                const input = document.querySelector(`input[name="${prop}"]`);
+                input.value = produto[prop];
+            }
+        })
+        .catch(error => { document.getElementById('error').innerText = error });
+    }
+
+    // Deletar produto pelo id
+    function deleteProduto(id) {
+        fetch("/produtos/" + id, {
+        method: "DELETE"
+        })
+        .then(async (res) => { return await checkError(res) })
+        .then((produto) => {
+            window.location.reload();
+        })
+        .catch((error) => { document.getElementById('error').innerText = error });
+    }
+
+    // Checar erro na resposta da requisição
+    async function checkError(res) {
+        if (!res.ok) {
+                const err = await res.json();
+                throw err;
+            }
+            return res.json();
+    }
+
+    // Montar dados do formulário usando FormData
+    function mountDataForm() {
+        const formData = new FormData(form);
+        const produto = {};
+        formData.forEach((v, k) => {
+            produto[k] = v;
+        });
+        return produto;
+    }
+</script>
