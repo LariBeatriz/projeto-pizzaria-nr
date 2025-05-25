@@ -44,7 +44,10 @@
 </form>
 
 <span id="error"></span>
-<% if (error) { %><span><%= error %></span><% } %>
+
+<% if (error) { %>
+    <span><%= JSON.stringify(error) %></span>
+<% } %>
 
 <table>
   <thead>
@@ -85,6 +88,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
 <script>
+  window.TOKEN = "<%= token %>";
+
   const form = document.getElementById('pedidoForm');
 
   form.addEventListener("submit", (e) => {
@@ -179,9 +184,18 @@
 
   window.addEventListener('DOMContentLoaded', async () => {
     try {
-      const res = await fetch('http://localhost:3000/produtos');
+      const res = await fetch('http://localhost:3000/produtos', {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${window.TOKEN || ""}`
+      }
+    });
       const produtos = await res.json();
       const select = document.getElementById('itensPedido');
+
+      if (!Array.isArray(produtos)) {
+        throw new Error(produtos.error || "Produtos não encontrados.");
+      }
 
       produtos.forEach(prod => {
         const precoCorrigido = parseFloat(prod.preco.toString().replace(',', '.'));

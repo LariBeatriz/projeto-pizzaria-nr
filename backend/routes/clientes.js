@@ -8,6 +8,7 @@
 var express = require('express');
 var router = express.Router();
 var sqlite3 = require('sqlite3');
+var verifyJWT = require('../auth/verify-token');
 
 // Conectando ao banco de dados SQLite
 const db = new sqlite3.Database('./database/database.db');
@@ -92,7 +93,7 @@ db.run(`CREATE TABLE IF NOT EXISTS clientes (
  *       500:
  *         description: Erro ao criar o cliente
  */
-router.post('/', (req, res) => {
+router.post('/', verifyJWT, (req, res) => {
   console.log(req.body);
   const { nome, email, data_nascimento, contato, cep, logradouro, complemento, bairro, estado } = req.body;
 
@@ -127,7 +128,7 @@ router.post('/', (req, res) => {
  *       500:
  *         description: Erro ao buscar clientes
  */
-router.get('/', (req, res) => {
+router.get('/', verifyJWT, (req, res) => {
   db.all(`SELECT * FROM clientes`, (err, clientes) => {
     if (err) {
       console.error('Erro ao buscar clientes:', err);
@@ -163,7 +164,7 @@ router.get('/', (req, res) => {
  *       500:
  *         description: Erro ao buscar cliente
  */
-router.get('/:id', (req, res) => {
+router.get('/:id', verifyJWT, (req, res) => {
   const { id } = req.params;
 
   db.get(`SELECT * FROM clientes WHERE id = ?`, [id], (err, row) => {
@@ -348,7 +349,7 @@ router.patch('/:id', (req, res) => {
  *       500:
  *         description: Erro ao deletar o cliente
  */
-router.delete('/:id', (req, res) => {
+router.delete('/:id', verifyJWT, (req, res) => {
   const { id } = req.params;
 
   db.run(`DELETE FROM clientes WHERE id = ?`, [id], function(err) {

@@ -4,18 +4,8 @@ const url = "http://localhost:3000/pedidos/";
 
 /* GET pedidos listing. */
 router.get('/', function(req, res, next) {
-  
-  fetch(url, { method: 'GET' })
-    .then(async (res) => {
-      if (!res.ok) {
-        const err = await res.json();
-        throw err;
-      }
-      return res.json();
-    })
-    .then((pedidos) => {
-      let title = "Gestão de Pedidos";
-      let cols = ["ID", 
+  let title = "Gestão de Pedidos";
+  let cols = ["ID", 
                   "Data e Hora",
                   "Nome do Cliente",
                   "Status do Pedido",
@@ -26,11 +16,31 @@ router.get('/', function(req, res, next) {
                   "Tipo do Pedido",
                   "Endereço de Entrega",
                   "Ações"];
+  
+  const token = req.session.token || "";
+  res.render('layout', { body: "pages/pedidos", title, pedidos: [], cols, error: "", token });
+
+  fetch(url, { 
+    method: 'GET',
+    headers: { 
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    }
+  })
+    .then(async (res) => {
+      if (!res.ok) {
+        const err = await res.json();
+        throw err;
+      }
+      return res.json();
+    })
+    .then((pedidos) => {
       res.render('layout', { body: "pages/pedidos", title, pedidos, cols, error: "" });
     })
     .catch((error) => {
       console.log('Erro', error);
-      res.render('layout', { body: "pages/pedidos", title, error });
+      //res.render('layout', { body: "pages/pedidos", title, error, cols, pedidos: [] });
+      res.redirect('/login');
     });
 
 });
@@ -39,10 +49,14 @@ router.get('/', function(req, res, next) {
 router.post("/", (req, res) => {
 
   const { dataHora, cliente, statusPedido, formaPagamento, totalPedido, observacoes, itensPedido, tipoPedido, enderecoEntrega } = req.body;
+  const token = req.session.token || "";
 
   fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { 
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
     body: JSON.stringify({ dataHora, cliente, statusPedido, formaPagamento, totalPedido, observacoes, itensPedido, tipoPedido, enderecoEntrega })
   })
     .then(async (res) => {
@@ -92,9 +106,14 @@ router.put("/:id", (req, res) => {
 router.delete("/:id", (req, res) => {
 
   const { id } = req.params;
+  const token = req.session.token || "";
 
   fetch(url + id, {
-    method: "DELETE"
+    method: "DELETE",
+    headers: { 
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    }
   })
     .then(async (res) => {
       if (!res.ok) {
@@ -116,6 +135,7 @@ router.delete("/:id", (req, res) => {
 router.get("/:id", (req, res) => {
 
   const { id } = req.params;
+  const token = req.session.token || "";
 
   fetch(url + id, {
     method: "GET",

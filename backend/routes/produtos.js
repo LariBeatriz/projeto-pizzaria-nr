@@ -8,6 +8,7 @@
 var express = require('express');
 var router = express.Router();
 var sqlite3 = require('sqlite3');
+var verifyJWT = require('../auth/verify-token');
 
 // Conectando com o banco de dados
 const db = new sqlite3.Database('./database/database.db');
@@ -56,7 +57,7 @@ db.run(`
  *       500:
  *         description: Erro ao criar o produto
  */
-router.post('/', (req, res) => {
+router.post('/', verifyJWT, (req, res) => {
   console.log(req.body);
   const { nome, descricao, categoria, preco, tamanho } = req.body;
 
@@ -92,7 +93,7 @@ router.post('/', (req, res) => {
  *       500:
  *         description: Erro ao buscar produtos
  */
-router.get('/', (req, res) => {
+router.get('/', verifyJWT, (req, res) => {
   db.all(`SELECT * FROM produtos`, (err, produtos) => {
     if (err) {
       console.error('Erro ao buscar produtos:', err);
@@ -128,7 +129,7 @@ router.get('/', (req, res) => {
  *       500:
  *         description: Erro ao buscar o produto
  */
-router.get('/:id', (req, res) => {
+router.get('/:id', verifyJWT, (req, res) => {
   const { id } = req.params;
 
   db.get(`SELECT * FROM produtos WHERE id = ?`, [id], (err, row) => {
@@ -309,7 +310,7 @@ router.patch('/:id', (req, res) => {
  *       500:
  *         description: Erro ao deletar o produto
  */
-router.delete('/:id', (req, res) => {
+router.delete('/:id', verifyJWT, (req, res) => {
   const { id } = req.params;
 
   db.run(`DELETE FROM produtos WHERE id = ?`, [id], function (err) {

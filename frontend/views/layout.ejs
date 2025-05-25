@@ -10,7 +10,7 @@
 
     <main>
         <div class="container">
-        <%- include(body) %>
+        <%- include(body, { error: typeof error !== 'undefined' ? error : null }) %>
         </div>
     </main>
 

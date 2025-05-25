@@ -4,8 +4,18 @@ const url = "http://localhost:3000/clientes/";
 
 /* GET clientes listing. */
 router.get('/', function(req, res, next) {
+  let title = "Gestão de Clientes";
+  let cols = ["ID", "Nome", "Email", "Data de Nascimento", "Contato", "CEP", "Logradouro", "Complemento", "Bairro", "Estado", "Ações"];
+
+  const token = req.session.token || "";
   
-  fetch(url, { method: 'GET' })
+  fetch(url, { 
+    method: 'GET',
+    headers: { 
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    }
+  })
     .then(async (res) => {
       if (!res.ok) {
         const err = await res.json();
@@ -14,13 +24,12 @@ router.get('/', function(req, res, next) {
       return res.json();
     })
     .then((clientes) => {
-      let title = "Gestão de Clientes";
-      let cols = ["ID", "Nome", "Email", "Data de Nascimento", "Contato", "CEP", "Logradouro", "Complemento", "Bairro", "Estado", "Ações"];
       res.render('layout', { body: "pages/clientes", title, clientes, cols, error: "" });
     })
     .catch((error) => {
       console.log('Erro', error);
-      res.render('layout', { body: "pages/clientes", title, error });
+      //res.render('layout', { body: "pages/clientes", title, error, cols, clientes: [] });
+      res.redirect('/login');
     });
 
 });
@@ -29,10 +38,14 @@ router.get('/', function(req, res, next) {
 router.post("/", (req, res) => {
 
   const { nome, email, data_nascimento, contato, cep, logradouro, complemento, bairro, estado } = req.body;
+  const token = req.session.token || "";
 
   fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { 
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
     body: JSON.stringify({ nome, email, data_nascimento, contato, cep, logradouro, complemento, bairro, estado })
   })
     .then(async (res) => {
@@ -82,9 +95,14 @@ router.put("/:id", (req, res) => {
 router.delete("/:id", (req, res) => {
 
   const { id } = req.params;
+  const token = req.session.token || "";
 
   fetch(url + id, {
-    method: "DELETE"
+    method: "DELETE",
+    headers: { 
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    }
   })
     .then(async (res) => {
       if (!res.ok) {
@@ -106,10 +124,14 @@ router.delete("/:id", (req, res) => {
 router.get("/:id", (req, res) => {
 
   const { id } = req.params;
+  const token = req.session.token || "";
 
   fetch(url + id, {
     method: "GET",
-    headers: { "Content-Type": "application/json" }
+    headers: { 
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    }
   })
     .then(async (res) => {
       if (!res.ok) {
