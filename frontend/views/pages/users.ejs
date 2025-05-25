@@ -1,0 +1,162 @@
+<div class="container">
+    <h3>
+        <%= title %>
+    </h3>
+    
+    <form id="userForm">
+        <input required type="hidden" name="id" id="id">
+        
+        <label for="username">Nome</label>
+        <input required name="username" id="username" type="text"><br>
+        
+        <label for="password">Senha</label>
+        <input required name="password" id="password" type="password"
+        minlength="8" maxlength="15"><br>
+        
+        <label for="email">Email</label>
+        <input required name="email" id="email" type="email"><br>
+        
+        <label for="phone">Telefone</label>
+        <input required name="phone" id="phone" type="text" oninput="formatarTelefone(this)"
+        maxlength="16" placeholder="(XX) XXXXX-XXXX"><br>
+        
+        <button class="btn waves-effect waves-light" type="submit"><i class="material-icons right">send</i>Enviar</button>
+        <button class="btn waves-effect waves-light" type="reset"><i class="material-icons right">cancel</i>Cancelar</button>
+    </form>
+</div>
+
+<span id="error"></span>
+
+<% if (error) { %>
+    <span><%= error %></span>
+<% } %>
+
+<table>
+    <thead>
+        <tr>
+            <% for(let col of cols) { %>
+                <th><%= col %></th>
+            <% } %>
+        </tr>
+    </thead>
+    <tbody>
+        <% for(let user of users) { %>
+            <tr>
+                <% for(let prop in user) { %>
+                    <td>
+                        <%= user[prop] %>
+                    </td>
+                <% } %>
+                <td>
+                    <button onclick="editUser('<%= user.id %>')">Editar</button>
+                    <button onclick="deleteUser('<%= user.id %>')">Deletar</button>
+                </td>
+            </tr>
+        <% } %>
+    </tbody>
+</table>
+
+<script>
+    // Evento de clique no botão Editar
+    const form = document.getElementById('userForm');
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const user = mountDataForm();
+
+        let id = user.id;
+        let METHOD = id ? 'PUT' : 'POST';
+        let URL = id ? `/users/${id}` : '/users';
+
+        createOrUpdate(user, URL, METHOD);
+    });
+
+    // Ccriar ou atualizar usuário
+    function createOrUpdate(user, URL, METHOD) {
+        console.log(user);
+
+        fetch(URL, {
+            method: METHOD,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(user)
+        })
+        .then(async(res) => { return await checkError(res) })
+        .then((user) => { 
+            form.reset();
+            window.location.reload();
+        })
+        .catch((error) => { 
+            document.getElementById('error').innerText = error.message || JSON.stringify(error);
+        });
+    }
+    
+    // Buscar usuário pelo id e carregar no formulário
+    function editUser(id) {
+        fetch("/users/" + id, {
+            method: "GET"
+        })
+        .then(async (res) => { return await checkError(res) })
+        .then(user => {
+            console.log('retornou o usuário', user) 
+            for (let prop in user) {
+                const input = document.querySelector(`input[name="${prop}"]`);
+                input.value = user[prop];
+            }
+        })
+        .catch(error => { document.getElementById('error').innerText = error });
+    }
+
+    // Deletar usuário pelo id
+    function deleteUser(id) {
+        fetch("/users/" + id, {
+        method: "DELETE"
+        })
+        .then(async (res) => { return await checkError(res) })
+        .then((user) => {
+            window.location.reload();
+        })
+        .catch((error) => { document.getElementById('error').innerText = error });
+    }
+
+    // Checar erro na resposta da requisição
+    async function checkError(res) {
+        if (!res.ok) {
+                const err = await res.json();
+                throw err;
+            }
+            return res.json();
+    }
+
+    // Montar dados do formulário usando FormData
+    function mountDataForm() {
+        const formData = new FormData(form);
+        const user = {};
+        formData.forEach((v, k) => {
+            user[k] = v;
+        });
+        return user;
+    }
+
+    // Função para formatar o telefone no padrão brasileiro
+    function formatarTelefone(input) {
+        // Remove tudo que não é dígito
+        let telefone = input.value.replace(/\D/g, '');
+
+        // Aplica a máscara conforme o tamanho do número
+        if (telefone.length <= 2) {
+            telefone = `(${telefone}`;
+        } else if (telefone.length <= 3) {
+            telefone = `(${telefone.substring(0, 2)}) ${telefone.substring(2)}`;
+        } else if (telefone.length <= 7) {
+            telefone = `(${telefone.substring(0, 2)}) ${telefone.substring(2, 3)} ${telefone.substring(3)}`;
+        } else if (telefone.length <= 11) {
+            telefone = `(${telefone.substring(0, 2)}) ${telefone.substring(2, 3)} ${telefone.substring(3, 7)}-${telefone.substring(7)}`;
+        } else {
+            // Limita a 11 dígitos (formato brasileiro)
+            telefone = telefone.substring(0, 12);
+            telefone = `(${telefone.substring(0, 2)}) ${telefone.substring(2, 3)} ${telefone.substring(3, 7)}-${telefone.substring(7)}`;
+        }
+
+        // Atualiza o valor do campo
+        input.value = telefone;
+    }
+</script>

@@ -1,0 +1,225 @@
+<div class="container">
+
+    <h3>
+        <%= title %>
+    </h3>
+    
+    <form id="clienteForm">
+        <input required type="hidden" name="id" id="id">
+
+        <label for="nome">Nome</label>
+        <input required name="nome" id="nome" type="text"><br>
+        
+        <label for="email">Email</label>
+        <input required name="email" id="email" type="email"><br>
+        
+        <label for="data_nascimento">Data de Nascimento</label>
+        <input required name="data_nascimento" id="data_nascimento" type="date"><br>
+        
+        <label for="contato">Contato</label>
+        <input required name="contato" id="contato" type="text" oninput="formatarTelefone(this)"
+        maxlength="16" placeholder="(XX) XXXXX-XXXX"><br>
+
+        <label for="cep">CEP</label>
+        <input required name="cep" id="cep" type="text" oninput="formatarCEP(this)" 
+                        maxlength="9" placeholder="XXXXX-XXX"><br>
+
+        <label for="logradouro">Logradouro</label>
+        <input required name="logradouro" id="logradouro" type="text"><br>
+
+        <label for="complemento">Complemento</label>
+        <input name="complemento" id="complemento" type="text"><br>
+        
+        <label for="bairro">Bairro</label>
+        <input required name="bairro" id="bairro" type="text"><br>
+
+        <label for="estado">Estado</label>
+        <input required name="estado" id="estado" type="text"><br>
+
+        <button class="btn waves-effect waves-light" type="submit"><i class="material-icons right">send</i>Enviar</button>
+        <button class="btn waves-effect waves-light" type="reset"><i class="material-icons right">cancel</i>Cancelar</button>
+    </form>
+</div>
+
+<span id="error"></span>
+
+<% if (error) { %>
+    <span><%= JSON.stringify(error) %></span>
+<% } %>
+
+<table>
+    <thead>
+        <tr>
+            <% for(let col of cols) { %>
+                <th><%= col %></th>
+            <% } %>
+        </tr>
+    </thead>
+    <tbody>
+        <% for(let cliente of clientes) { %>
+            <tr>
+                <% for(let prop in cliente) { %>
+                    <td>
+                        <%= cliente[prop] %>
+                    </td>
+                <% } %>
+                <td>
+                    <button onclick="editCliente('<%= cliente.id %>')">Editar</button>
+                    <button onclick="deleteCliente('<%= cliente.id %>')">Deletar</button>
+                </td>
+            </tr>
+        <% } %>
+    </tbody>
+</table>
+
+<script>
+    // Evento de clique no botão Editar
+    const form = document.getElementById('clienteForm');
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const cliente = mountDataForm();
+
+        let id = cliente.id;
+        let METHOD = id ? 'PUT' : 'POST';
+        let URL = id ? `/clientes/${id}` : '/clientes';
+
+        createOrUpdate(cliente, URL, METHOD);
+    });
+
+    // Ccriar ou atualizar cliente
+    function createOrUpdate(cliente, URL, METHOD) {
+        console.log(cliente);
+
+        fetch(URL, {
+            method: METHOD,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(cliente)
+        })
+        .then(async(res) => { return await checkError(res) })
+        .then((cliente) => { 
+            form.reset();
+            window.location.reload();
+        })
+        .catch((error) => { 
+            document.getElementById('error').innerText = error.message || JSON.stringify(error);
+        });
+    }
+    
+    // Buscar cliente pelo id e carregar no formulário
+    function editCliente(id) {
+        fetch("/clientes/" + id, {
+            method: "GET"
+        })
+        .then(async (res) => { return await checkError(res) })
+        .then(cliente => {
+            console.log('retornou o cliente', cliente) 
+            for (let prop in cliente) {
+                const input = document.querySelector(`input[name="${prop}"]`);
+                input.value = cliente[prop];
+            }
+        })
+        .catch(error => { document.getElementById('error').innerText = error });
+    }
+
+    // Deletar cliente pelo id
+    function deleteCliente(id) {
+        fetch("/clientes/" + id, {
+        method: "DELETE"
+        })
+        .then(async (res) => { return await checkError(res) })
+        .then((cliente) => {
+            window.location.reload();
+        })
+        .catch((error) => { document.getElementById('error').innerText = JSON.stringify(error) });
+    }
+
+    // Checar erro na resposta da requisição
+    async function checkError(res) {
+        if (!res.ok) {
+                const err = await res.json();
+                throw err;
+            }
+            return res.json();
+    }
+
+    // Montar dados do formulário usando FormData
+    function mountDataForm() {
+        const formData = new FormData(form);
+        const cliente = {};
+        formData.forEach((v, k) => {
+            cliente[k] = v;
+        });
+        return cliente;
+    }
+
+    // Função para formatar o telefone no padrão brasileiro
+    function formatarTelefone(input) {
+        // Remove tudo que não é dígito
+        let telefone = input.value.replace(/\D/g, '');
+
+        // Aplica a máscara conforme o tamanho do número
+        if (telefone.length <= 2) {
+            telefone = `(${telefone}`;
+        } else if (telefone.length <= 3) {
+            telefone = `(${telefone.substring(0, 2)}) ${telefone.substring(2)}`;
+        } else if (telefone.length <= 7) {
+            telefone = `(${telefone.substring(0, 2)}) ${telefone.substring(2, 3)} ${telefone.substring(3)}`;
+        } else if (telefone.length <= 11) {
+            telefone = `(${telefone.substring(0, 2)}) ${telefone.substring(2, 3)} ${telefone.substring(3, 7)}-${telefone.substring(7)}`;
+        } else {
+            // Limita a 11 dígitos (formato brasileiro)
+            telefone = telefone.substring(0, 12);
+            telefone = `(${telefone.substring(0, 2)}) ${telefone.substring(2, 3)} ${telefone.substring(3, 7)}-${telefone.substring(7)}`;
+        }
+
+        // Atualiza o valor do campo
+        input.value = telefone;
+    }
+    // Função para formatar o CEP no padrão XXXXX-XXX
+    function formatarCEP(input) {
+    let cep = input.value.replace(/\D/g, '');
+
+    if (cep.length > 5) {
+        cep = cep.slice(0, 5) + '-' + cep.slice(5, 8);
+    }
+
+    input.value = cep;
+    }
+
+    // Adiciona um evento para buscar o CEP quando o campo perder o foco
+    document.getElementById('cep').addEventListener('blur', buscarCEP);
+
+    // Função para buscar dados do CEP usando a API ViaCEP
+    function buscarCEP() {
+        const cep = document.getElementById('cep').value.replace(/\D/g, '');
+        const errorSpan = document.getElementById('error');
+
+        // Verifica se o CEP tem 8 dígitos
+        if (cep.length !== 8) {
+            errorSpan.innerText = 'CEP inválido. Digite 8 números.';
+            return;
+        }
+
+    // Faz a requisição para a API ViaCEP
+    fetch(`https://viacep.com.br/ws/${cep}/json/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.erro) {
+                errorSpan.innerText = 'CEP não encontrado.';
+                return;
+            }
+
+            // Preenche os campos com os dados retornados
+            document.getElementById('logradouro').value = data.logradouro || '';
+            document.getElementById('bairro').value = data.bairro || '';
+            document.getElementById('estado').value = data.uf || '';
+            
+            // Limpa mensagens de erro
+            errorSpan.innerText = '';
+        })
+        .catch(error => {
+            errorSpan.innerText = 'Erro ao buscar CEP. Tente novamente.';
+            console.error('Erro:', error);
+        });
+    }
+</script>
