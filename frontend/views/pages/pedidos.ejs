@@ -1,55 +1,84 @@
 <h1><%= title %></h1>
 
-<form id="pedidoForm">
+<form id="pedidoForm" class="col s12">
   <input type="hidden" name="id" id="id" />
 
-  <label for="dataHora">Data</label>
-  <input required name="dataHora" id="dataHora" type="text" /><br />
+  <div class="input-field">
+    <input required name="dataHora" id="dataHora" type="datetime-local">
+    <label for="dataHora" class="active">Data e Hora</label>
+  </div>
 
-  <label for="cliente">Nome do Cliente</label>
-  <input required name="cliente" id="cliente" type="text" /><br />
+  <div class="input-field">
+    <select required name="cliente" id="cliente">
+      <option value="" disabled selected>Selecione um cliente</option>
+    </select>
+    <label for="cliente">Cliente</label>
+  </div>
 
-  <label for="statusPedido">Status do Pedido</label>
-  <select required name="statusPedido" id="statusPedido">
-    <option value="">Selecione</option>
-    <option value="Em preparo">Em preparo</option>
-    <option value="Pronto para entrega">Pronto para entrega</option>
-    <option value="Saiu para entrega">Saiu para entrega</option>
-    <option value="Entregue">Entregue</option>
-    <option value="Cancelado">Cancelado</option>
-  </select><br />
+  <div class="input-field">
+    <select required name="statusPedido" id="statusPedido">
+      <option value="" disabled selected>Selecione</option>
+      <option value="Em preparo">Em preparo</option>
+      <option value="Pronto para entrega">Pronto para entrega</option>
+      <option value="Saiu para entrega">Saiu para entrega</option>
+      <option value="Entregue">Entregue</option>
+      <option value="Cancelado">Cancelado</option>
+    </select>
+    <label for="statusPedido">Status do Pedido</label>
+  </div>
 
-  <label for="formaPagamento">Forma de Pagamento</label>
-  <input required name="formaPagamento" id="formaPagamento" type="text" /><br />
+  <div class="input-field">
+    <select required name="formaPagamento" id="formaPagamento">
+      <option value="" disabled selected>Selecione</option>
+      <option value="Dinheiro">Dinheiro</option>
+      <option value="PIX">PIX</option>
+      <option value="Cartão">Cartão</option>
+    </select>
+    <label for="formaPagamento">Forma de Pagamento</label>
+  </div>
 
-  <label for="totalPedido">Total do Pedido</label>
-  <input required name="totalPedido" id="totalPedido" type="text" readonly /><br />
+  <fieldset>
+    <legend>Itens do Pedido</legend>
+    <div id="itensCheckbox" class="input-field"></div>
+  </fieldset>
 
-  <label for="observacoes">Observações</label>
-  <input name="observacoes" id="observacoes" type="text" /><br />
+  <div class="input-field">
+    <input required name="totalPedido" id="totalPedido" type="text" readonly>
+    <label for="totalPedido" class="active">Total do Pedido</label>
+  </div>
 
-  <label for="itensPedido">Itens do Pedido</label>
-  <select name="itensPedido" id="itensPedido" class="browser-default" multiple required onchange="calcularTotal()">
-    <!-- opções serão carregadas via JS -->
-  </select><br />
+  <div class="input-field">
+    <select required name="tipoPedido" id="tipoPedido">
+      <option value="" disabled selected>Selecione</option>
+      <option value="Retirada">Retirada</option>
+      <option value="Entrega">Entrega</option>
+      <option value="Mesa">Mesa</option>
+    </select>
+    <label for="tipoPedido">Tipo do Pedido</label>
+  </div>
 
-  <label for="tipoPedido">Tipo do Pedido</label>
-  <input required name="tipoPedido" id="tipoPedido" type="text" /><br />
+  <div class="input-field">
+    <input name="observacoes" id="observacoes" type="text">
+    <label for="observacoes">Observações</label>
+  </div>
 
-  <label for="enderecoEntrega">Endereço de Entrega</label>
-  <input name="enderecoEntrega" id="enderecoEntrega" type="text" /><br />
+  <div class="input-field">
+    <input name="enderecoEntrega" id="enderecoEntrega" type="text" readonly>
+    <label for="enderecoEntrega">Endereço de Entrega</label>
+  </div>
 
-  <button type="submit">Enviar</button>
-  <button type="reset">Cancelar</button>
+  <button type="submit" class="btn waves-effect waves-light">Enviar</button>
+  <button type="reset" class="btn red lighten-1">Cancelar</button>
 </form>
 
-<span id="error"></span>
-<% if (error) { %><span><%= error %></span><% } %>
+<span id="error" class="red-text"></span>
 
-<table>
+<table class="highlight">
   <thead>
     <tr>
-      <% for(let col of cols) { %><th><%= col %></th><% } %>
+      <% for(let col of cols) { %>
+        <th><%= col %></th>
+      <% } %>
     </tr>
   </thead>
   <tbody>
@@ -60,11 +89,13 @@
         <td><%= pedido.cliente %></td>
         <td><%= pedido.statusPedido %></td>
         <td><%= pedido.formaPagamento %></td>
-        <td><%= pedido.totalPedido %></td>
+        <td>
+          <%= typeof pedido.totalPedido === 'number' ? pedido.totalPedido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : pedido.totalPedido %>
+        </td>
         <td><%= pedido.observacoes %></td>
         <td>
           <% if (Array.isArray(pedido.itensPedido)) { %>
-            <%= pedido.itensPedido.map(item => typeof item === 'string' ? item : JSON.stringify(item)).join(', ') %>
+            <%= pedido.itensPedido.join(', ') %>
           <% } else { %>
             <%= pedido.itensPedido %>
           <% } %>
@@ -72,67 +103,158 @@
         <td><%= pedido.tipoPedido %></td>
         <td><%= pedido.enderecoEntrega %></td>
         <td>
-          <button onclick="editPedido('<%= pedido.id %>')">Editar</button>
-          <button onclick="deletePedido('<%= pedido.id %>')">Deletar</button>
+          <button onclick="editPedido('<%= pedido.id %>')" class="btn-small blue">Editar</button>
+          <button onclick="deletePedido('<%= pedido.id %>')" class="btn-small red">Deletar</button>
         </td>
       </tr>
     <% } %>
   </tbody>
 </table>
 
-<!-- Máscaras e scripts -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/imask/6.4.2/imask.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-
 <script>
+  window.TOKEN = "<%= token %>";
+  const BASE_URL = "http://localhost:3000";
+
   const form = document.getElementById('pedidoForm');
 
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const pedido = mountDataForm();
-    const id = pedido.id;
-    const METHOD = id ? 'PUT' : 'POST';
-    const URL = id ? `/pedidos/${id}` : '/pedidos';
+    const METHOD = pedido.id ? 'PUT' : 'POST';
+    const URL = pedido.id ? `/pedidos/${pedido.id}` : '/pedidos';
 
-    fetch(URL, {
-      method: METHOD,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(pedido)
-    })
-    .then(async (res) => await checkError(res))
-    .then(() => {
+    try {
+      const res = await fetch(URL, {
+        method: METHOD,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pedido)
+      });
+      await checkError(res);
       form.reset();
       window.location.reload();
-    })
-    .catch((error) => {
+    } catch (error) {
       document.getElementById('error').innerText = error.message || JSON.stringify(error);
-    });
+    }
   });
 
   function editPedido(id) {
-    fetch("/pedidos/" + id)
-      .then(async (res) => await checkError(res))
+    fetch(`/pedidos/${id}`)
+      .then(res => checkError(res))
       .then(pedido => {
         for (let prop in pedido) {
           const input = document.querySelector(`[name="${prop}"]`);
-          if (input && input.tagName === 'SELECT' && input.multiple) {
-            for (const option of input.options) {
-              option.selected = pedido[prop].includes(option.value);
+          if (input) {
+            if (input.tagName === 'SELECT') {
+              input.value = pedido[prop];
+              M.FormSelect.getInstance(input)?.destroy();
+              M.FormSelect.init(input);
+            } else if (prop === "dataHora" && input.type === "datetime-local") {
+              input.value = pedido[prop].slice(0,16).replace(' ', 'T');
+            } else {
+              input.value = pedido[prop];
             }
-          } else if (input) {
-            input.value = pedido[prop];
           }
         }
+        document.querySelectorAll('input[name="itensPedido"]').forEach(cb => {
+          cb.checked = pedido.itensPedido.includes(cb.value);
+        });
         calcularTotal();
       })
-      .catch(error => document.getElementById('error').innerText = error);
+      .catch(err => document.getElementById('error').innerText = err);
   }
 
   function deletePedido(id) {
-    fetch("/pedidos/" + id, { method: "DELETE" })
-      .then(async (res) => await checkError(res))
+    fetch(`/pedidos/${id}`, { method: "DELETE" })
+      .then(res => checkError(res))
       .then(() => window.location.reload())
-      .catch(error => document.getElementById('error').innerText = error);
+      .catch(err => document.getElementById('error').innerText = err);
+  }
+
+  function mountDataForm() {
+    const formData = new FormData(form);
+    const pedido = {};
+    formData.forEach((v, k) => {
+      if (k !== "itensPedido") pedido[k] = v;
+    });
+    const checkboxes = document.querySelectorAll('input[name="itensPedido"]:checked');
+    pedido.itensPedido = Array.from(checkboxes).map(cb => cb.value);
+    pedido.totalPedido = calcularTotal(true);
+    return pedido;
+  }
+
+  function calcularTotal(returnValue = false) {
+    const checkboxes = document.querySelectorAll('input[name="itensPedido"]:checked');
+    let total = 0;
+    checkboxes.forEach(cb => {
+      const preco = parseFloat(cb.getAttribute('data-preco'));
+      if (!isNaN(preco)) total += preco;
+    });
+    const totalField = document.getElementById('totalPedido');
+    totalField.value = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    if (returnValue) return total;
+  }
+
+  async function loadProdutos() {
+    try {
+      const res = await fetch(`${BASE_URL}/produtos`, { headers: { "Authorization": `Bearer ${window.TOKEN}` } });
+      const produtos = await checkError(res);
+      const container = document.getElementById('itensCheckbox');
+      container.innerHTML = '';
+      produtos.forEach(prod => {
+        const preco = parseFloat(prod.preco.toString().replace(',', '.'));
+        const p = document.createElement('p');
+        const label = document.createElement('label');
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.name = 'itensPedido';
+        checkbox.value = prod.id;
+        checkbox.classList.add('filled-in');
+        checkbox.setAttribute('data-preco', preco);
+        checkbox.addEventListener('change', () => calcularTotal());
+        const span = document.createElement('span');
+        span.textContent = `${prod.nome} - R$ ${preco.toFixed(2)}`;
+        label.appendChild(checkbox);
+        label.appendChild(span);
+        p.appendChild(label);
+        container.appendChild(p);
+      });
+    } catch (err) {
+      console.error('Erro ao carregar produtos:', err);
+    }
+  }
+
+  async function loadClientes() {
+    try {
+      const res = await fetch(`${BASE_URL}/clientes`, { headers: { "Authorization": `Bearer ${window.TOKEN}` } });
+      const clientes = await checkError(res);
+      const select = document.getElementById('cliente');
+      select.innerHTML = '<option value="" disabled selected>Selecione um cliente</option>';
+      clientes.forEach(cli => {
+        const opt = document.createElement('option');
+        opt.value = cli.id;
+        opt.textContent = cli.nome;
+        select.appendChild(opt);
+      });
+      select.addEventListener('change', e => preencherEnderecoCliente(e.target.value));
+      M.FormSelect.init(select);
+    } catch (err) {
+      console.error('Erro ao carregar clientes:', err);
+    }
+  }
+
+  async function preencherEnderecoCliente(clienteId) {
+    if (!clienteId) {
+      document.getElementById('enderecoEntrega').value = '';
+      return;
+    }
+    try {
+      const res = await fetch(`${BASE_URL}/clientes/${clienteId}`, { headers: { "Authorization": `Bearer ${window.TOKEN}` } });
+      const cliente = await checkError(res);
+      const endereco = `${cliente.logradouro || ''}, ${cliente.bairro || ''}, ${cliente.cep || ''}, ${cliente.estado || ''}`;
+      document.getElementById('enderecoEntrega').value = endereco.trim();
+    } catch (err) {
+      console.error('Erro ao preencher endereço:', err);
+    }
   }
 
   async function checkError(res) {
@@ -143,62 +265,9 @@
     return res.json();
   }
 
-  function mountDataForm() {
-    const formData = new FormData(form);
-    const pedido = {};
-    formData.forEach((v, k) => {
-      if (k === "itensPedido") {
-        const select = document.getElementById('itensPedido');
-        const selected = Array.from(select.selectedOptions).map(opt => opt.value);
-        pedido[k] = selected;
-      } else if (k === 'totalPedido') {
-        pedido[k] = parseFloat(v.replace(',', '.')) || 0;
-      } else {
-        pedido[k] = v;
-      }
-    });
-    return pedido;
-  }
-
-  function calcularTotal() {
-    const select = document.getElementById('itensPedido');
-    let total = 0;
-    for (let opt of select.selectedOptions) {
-      const preco = parseFloat(opt.getAttribute('data-preco'));
-      if (!isNaN(preco)) total += preco;
-    }
-    document.getElementById('totalPedido').value = total.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    });
-  }
-
-  IMask(document.getElementById('dataHora'), {
-    mask: '00/00/0000 00:00'
-  });
-
-  window.addEventListener('DOMContentLoaded', async () => {
-    try {
-      const res = await fetch('http://localhost:3000/produtos');
-      const produtos = await res.json();
-      const select = document.getElementById('itensPedido');
-
-      produtos.forEach(prod => {
-        const precoCorrigido = parseFloat(prod.preco.toString().replace(',', '.'));
-        const opt = document.createElement('option');
-        opt.value = prod.id;
-        opt.textContent = `${prod.nome} - R$ ${precoCorrigido.toFixed(2)}`;
-        opt.setAttribute('data-preco', precoCorrigido);
-        select.appendChild(opt);
-      });
-
-      // Inicializa os selects do Materialize após preencher
-      const selects = document.querySelectorAll('select');
-      M.FormSelect.init(selects);
-
-    } catch (err) {
-      console.error('Erro ao carregar produtos:', err);
-      document.getElementById('error').innerText = "Erro ao carregar produtos.";
-    }
+  document.addEventListener('DOMContentLoaded', async () => {
+    await loadProdutos();
+    await loadClientes();
+    M.FormSelect.init(document.querySelectorAll('select'));
   });
 </script>

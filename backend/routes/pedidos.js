@@ -8,9 +8,16 @@
 var express = require('express');
 var router = express.Router();
 var sqlite3 = require('sqlite3');
+var verifyJWT = require('../auth/verify-token');
 
 // Conectando ao banco de dados
 const db = new sqlite3.Database('./database/database.db');
+
+// Função para formatar data e hora
+function formatDateTime(input) {
+  if (!input) return null;
+  return new Date(input).toISOString().slice(0, 19).replace('T', ' ');
+}
 
 // Criação da tabela pedidos
 db.run(`
@@ -49,21 +56,12 @@ db.run(`
  *     responses:
  *       201:
  *         description: Pedido criado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Pedido criado com sucesso
  *       500:
  *         description: Erro ao criar o pedido
  */
-router.post('/', (req, res) => {
-  console.log(req.body);
+router.post('/', verifyJWT, (req, res) => {
   const {
-    dataHora,
+    dataHora: rawDataHora,
     cliente,
     statusPedido,
     formaPagamento,
@@ -73,6 +71,8 @@ router.post('/', (req, res) => {
     tipoPedido,
     enderecoEntrega
   } = req.body;
+
+  const dataHora = formatDateTime(rawDataHora);
 
   db.run(
     `INSERT INTO pedidos (
@@ -119,7 +119,7 @@ router.post('/', (req, res) => {
  *       500:
  *         description: Erro ao buscar pedidos
  */
-router.get('/', (req, res) => {
+router.get('/', verifyJWT, (req, res) => {
   db.all(`SELECT * FROM pedidos`, (err, pedidos) => {
     if (err) {
       console.error('Erro ao buscar pedidos:', err);
@@ -159,7 +159,7 @@ router.get('/', (req, res) => {
  *       500:
  *         description: Erro ao buscar o pedido
  */
-router.get('/:id', (req, res) => {
+router.get('/:id', verifyJWT, (req, res) => {
   const { id } = req.params;
 
   db.get(`SELECT * FROM pedidos WHERE id = ?`, [id], (err, row) => {
@@ -197,23 +197,15 @@ router.get('/:id', (req, res) => {
  *     responses:
  *       200:
  *         description: Pedido atualizado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Pedido atualizado com sucesso
  *       404:
  *         description: Pedido não encontrado
  *       500:
  *         description: Erro ao atualizar o pedido
  */
-router.put('/:id', (req, res) => {
+router.put('/:id', verifyJWT, (req, res) => {
   const { id } = req.params;
   const {
-    dataHora,
+    dataHora: rawDataHora,
     cliente,
     statusPedido,
     formaPagamento,
@@ -223,6 +215,8 @@ router.put('/:id', (req, res) => {
     tipoPedido,
     enderecoEntrega
   } = req.body;
+
+  const dataHora = formatDateTime(rawDataHora);
 
   db.run(
     `UPDATE pedidos SET
@@ -280,53 +274,13 @@ router.put('/:id', (req, res) => {
  *         application/json:
  *           schema:
  *             type: object
- *             properties:
- *               dataHora:
- *                 type: string
- *                 format: date-time
- *                 example: "2023-01-01T12:00:00Z"
- *               cliente:
- *                 type: string
- *                 example: "João Silva"
- *               statusPedido:
- *                 type: string
- *                 example: "Em andamento"
- *               formaPagamento:
- *                 type: string
- *                 example: "Cartão de Crédito"
- *               totalPedido:
- *                 type: number
- *                 format: float
- *                 example: 99.99
- *               observacoes:
- *                 type: string
- *                 example: "Entregar após as 18h"
- *               itensPedido:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     produto:
- *                       type: string
- *                       example: "Camiseta"
- *                     quantidade:
- *                       type: integer
- *                       example: 2
- *                     precoUnitario:
- *                       type: number
- *                       format: float
- *                       example: 49.99
+ *             example:
+ *               statusPedido: "Em preparo"
+ *               formaPagamento: "PIX"
+ *               totalPedido: 150.00
  *     responses:
  *       200:
  *         description: Pedido atualizado parcialmente com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Pedido atualizado parcialmente com sucesso
  *       400:
  *         description: Nenhum campo fornecido para atualização
  *       404:
@@ -334,37 +288,33 @@ router.put('/:id', (req, res) => {
  *       500:
  *         description: Erro ao atualizar o pedido parcialmente
  */
-router.patch('/:id', (req, res) => {
+router.patch('/:id', verifyJWT, (req, res) => {
   const { id } = req.params;
   const fields = req.body;
+
+  if (fields.dataHora) {
+    fields.dataHora = formatDateTime(fields.dataHora);
+  }
+
   const keys = Object.keys(fields);
-  let values = Object.values(fields);
+  const values = Object.values(fields);
 
   if (keys.length === 0) {
     return res.status(400).json({ error: 'Nenhum campo fornecido para atualização' });
   }
 
-  const updatedKeys = keys.map((key, index) => {
-    if (key === 'itensPedido') {
-      values[index] = JSON.stringify(values[index]);
-    }
-    return `${key} = ?`;
-  }).join(', ');
+  const setClause = keys.map((key) => `${key} = ?`).join(', ');
 
-  db.run(
-    `UPDATE pedidos SET ${updatedKeys} WHERE id = ?`,
-    [...values, id],
-    function (err) {
-      if (err) {
-        console.error('Erro ao atualizar o pedido parcialmente:', err);
-        return res.status(500).json({ error: 'Erro ao atualizar o pedido parcialmente' });
-      }
-      if (this.changes === 0) {
-        return res.status(404).json({ error: 'Pedido não encontrado' });
-      }
-      res.status(200).json({ message: 'Pedido atualizado parcialmente com sucesso' });
+  db.run(`UPDATE pedidos SET ${setClause} WHERE id = ?`, [...values, id], function (err) {
+    if (err) {
+      console.error('Erro ao atualizar o pedido parcialmente:', err);
+      return res.status(500).json({ error: 'Erro ao atualizar o pedido parcialmente' });
     }
-  );
+    if (this.changes === 0) {
+      return res.status(404).json({ error: 'Pedido não encontrado' });
+    }
+    res.status(200).json({ message: 'Pedido atualizado parcialmente com sucesso' });
+  });
 });
 
 /**
@@ -383,20 +333,12 @@ router.patch('/:id', (req, res) => {
  *     responses:
  *       200:
  *         description: Pedido deletado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Pedido deletado com sucesso
  *       404:
  *         description: Pedido não encontrado
  *       500:
  *         description: Erro ao deletar o pedido
  */
-router.delete('/:id', (req, res) => {
+router.delete('/:id', verifyJWT, (req, res) => {
   const { id } = req.params;
 
   db.run(`DELETE FROM pedidos WHERE id = ?`, [id], function (err) {
@@ -427,57 +369,32 @@ router.delete('/:id', (req, res) => {
  *         dataHora:
  *           type: string
  *           format: date-time
- *           description: Data e hora do pedido (opcional, pode ser gerado no servidor)
- *           example: "2023-01-01T12:00:00Z"
+ *           example: "2025-01-01T12:00:00"
  *         cliente:
  *           type: string
- *           description: Nome do cliente
  *           example: "João Silva"
  *         statusPedido:
  *           type: string
- *           description: Status atual do pedido
- *           example: "Em andamento"
- *           enum: ["Novo", "Em andamento", "Pronto", "Entregue", "Cancelado"]
+ *           example: "Em preparo"
  *         formaPagamento:
  *           type: string
- *           description: Forma de pagamento
  *           example: "Cartão de Crédito"
- *           enum: ["Dinheiro", "Cartão de Crédito", "Cartão de Débito", "PIX", "Transferência"]
  *         totalPedido:
  *           type: number
- *           format: float
- *           description: Valor total do pedido
  *           example: 99.99
  *         observacoes:
  *           type: string
- *           description: Observações adicionais sobre o pedido
- *           example: "Entregar após as 18h"
+ *           example: "Sem cebola"
  *         itensPedido:
  *           type: array
- *           description: Lista de itens do pedido (armazenado como JSON)
  *           items:
- *             type: object
- *             properties:
- *               produto:
- *                 type: string
- *                 example: "Camiseta"
- *               quantidade:
- *                 type: integer
- *                 example: 2
- *               precoUnitario:
- *                 type: number
- *                 format: float
- *                 example: 49.99
+ *             type: string
  *         tipoPedido:
  *           type: string
- *           description: Tipo do pedido
  *           example: "Entrega"
- *           enum: ["Retirada", "Entrega", "Mesa"]
  *         enderecoEntrega:
  *           type: string
- *           description: Endereço de entrega (se aplicável)
  *           example: "Rua das Flores, 123"
- * 
  *     Pedido:
  *       allOf:
  *         - $ref: '#/components/schemas/PedidoInput'
@@ -485,7 +402,6 @@ router.delete('/:id', (req, res) => {
  *           properties:
  *             id:
  *               type: integer
- *               description: ID autoincrementado do pedido
  *               example: 1
  */
 
