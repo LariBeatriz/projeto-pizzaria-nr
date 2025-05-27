@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-const url = "54.233.202.5:3000/pedidos/";
+const url = "http://54.233.202.5:3000/pedidos/";
 
 // Helper para formatar dataHora
 function formatDateTime(input) {
