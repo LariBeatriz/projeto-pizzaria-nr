@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-const url = "http://localhost:3000/produtos/";
+const url = "54.233.202.5:3000/produtos/";
 
 /* GET produtos listing. */
 router.get('/', function(req, res, next) {
