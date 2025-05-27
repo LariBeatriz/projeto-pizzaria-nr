@@ -1,76 +1,123 @@
-<h1>
-    <%= title %>
-</h1>
+<div class="container">
+  <h4 class="center-align"><%= title %></h4>
 
-<form id="clienteForm">
+  <form id="clienteForm" class="row">
     <input required type="hidden" name="id" id="id">
 
-    <label for="nome">Nome</label>
-    <input required name="nome" id="nome" type="text"><br>
+    <div class="input-field col s12 m6">
+      <i class="material-icons prefix">person</i>
+      <input required name="nome" id="nome" type="text">
+      <label for="nome">Nome</label>
+    </div>
 
-    <label for="email">Email</label>
-    <input required name="email" id="email" type="email"><br>
+    <div class="input-field col s12 m6">
+      <i class="material-icons prefix">email</i>
+      <input required name="email" id="email" type="email">
+      <label for="email">Email</label>
+    </div>
 
-    <label for="data_nascimento">Data de Nascimento</label>
-    <input required name="data_nascimento" id="data_nascimento" type="date"><br>
+    <div class="input-field col s12 m6">
+      <i class="material-icons prefix">calendar_today</i>
+      <input required name="data_nascimento" id="data_nascimento" type="date">
+      <label for="data_nascimento" class="active">Data de Nascimento</label>
+    </div>
 
-    <label for="contato">Contato</label>
-    <input required name="contato" id="contato" type="text" oninput="formatarTelefone(this)"
-                    maxlength="16" placeholder="(XX) XXXXX-XXXX"><br>
+    <div class="input-field col s12 m6">
+      <i class="material-icons prefix">phone</i>
+      <input required name="contato" id="contato" type="text" oninput="formatarTelefone(this)"
+        maxlength="16" placeholder="(XX) XXXXX-XXXX">
+      <label for="contato">Contato</label>
+    </div>
 
-    <label for="cep">CEP</label>
-    <input required name="cep" id="cep" type="text" oninput="formatarCEP(this)" 
-                    maxlength="9" placeholder="XXXXX-XXX"><br>
+    <div class="input-field col s12 m6">
+      <i class="material-icons prefix">location_on</i>
+      <input required name="cep" id="cep" type="text" oninput="formatarCEP(this)" 
+        maxlength="9" placeholder="XXXXX-XXX">
+      <label for="cep">CEP</label>
+    </div>
 
-    <label for="logradouro">Logradouro</label>
-    <input required name="logradouro" id="logradouro" type="text"><br>
+    <div class="input-field col s12 m6">
+      <i class="material-icons prefix">home</i>
+      <input required name="logradouro" id="logradouro" type="text">
+      <label for="logradouro">Logradouro</label>
+    </div>
 
-    <label for="complemento">Complemento</label>
-    <input name="complemento" id="complemento" type="text"><br>
+    <div class="input-field col s12 m6">
+      <i class="material-icons prefix">add_location</i>
+      <input name="complemento" id="complemento" type="text">
+      <label for="complemento">Complemento</label>
+    </div>
 
-    <label for="bairro">Bairro</label>
-    <input required name="bairro" id="bairro" type="text"><br>
+    <div class="input-field col s12 m6">
+      <i class="material-icons prefix">business</i>
+      <input required name="bairro" id="bairro" type="text">
+      <label for="bairro">Bairro</label>
+    </div>
 
-    <label for="estado">Estado</label>
-    <input required name="estado" id="estado" type="text"><br>
+    <div class="input-field col s12 m6">
+      <i class="material-icons prefix">flag</i>
+      <input required name="estado" id="estado" type="text">
+      <label for="estado">Estado</label>
+    </div>
 
-    <button type="submit">Enviar</button>
-    <button type="reset">Cancelar</button>
-</form>
+    <div class="col s12" style="margin-top: 1.5rem;">
+      <div style="display: flex; gap: 1rem;">
+        <button type="submit" class="btn waves-effect waves-light green">
+          <i class="material-icons left">send</i>Enviar
+        </button>
+        <button type="reset" class="btn red lighten-1 waves-effect">
+          <i class="material-icons left">cancel</i>Cancelar
+        </button>
+      </div>
+    </div>
+  </form>
 
-<span id="error"></span>
+  <div class="red-text" id="error"></div>
 
-<% if (error) { %>
-    <span><%= JSON.stringify(error) %></span>
-<% } %>
+  <% if (error) { %>
+    <div class="red-text"><%= JSON.stringify(error) %></div>
+  <% } %>
 
-<table>
+  <table class="highlight responsive-table">
     <thead>
-        <tr>
-            <% for(let col of cols) { %>
-                <th><%= col %></th>
-            <% } %>
-        </tr>
+      <tr>
+        <% for(let col of cols) { %>
+          <th><%= col %></th>
+        <% } %>
+        
+      </tr>
     </thead>
     <tbody>
-        <% for(let cliente of clientes) { %>
-            <tr>
-                <% for(let prop in cliente) { %>
-                    <td>
-                        <%= cliente[prop] %>
-                    </td>
-                <% } %>
-                <td>
-                    <button onclick="editCliente('<%= cliente.id %>')">Editar</button>
-                    <button onclick="deleteCliente('<%= cliente.id %>')">Deletar</button>
-                </td>
-            </tr>
-        <% } %>
+      <% for(let cliente of clientes) { %>
+        <tr>
+          <% for(let prop in cliente) { %>
+            <td><%= cliente[prop] %></td>
+          <% } %>
+          <td>
+            <div style="display: flex; gap: 0.5rem;">
+              <button onclick="editCliente('<%= cliente.id %>')" 
+                class="btn-small blue waves-effect">
+                <i class="material-icons">edit</i>
+              </button>
+              <button onclick="deleteCliente('<%= cliente.id %>')" 
+                class="btn-small red waves-effect">
+                <i class="material-icons">delete</i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      <% } %>
     </tbody>
-</table>
+  </table>
+
+  <div style="padding-bottom: 2rem;"></div>
+</div>
 
 <script>
-    // Evento de clique no botão Editar
+    document.addEventListener('DOMContentLoaded', function() {
+        M.updateTextFields();
+    });
+
     const form = document.getElementById('clienteForm');
     form.addEventListener("submit", (e) => {
         e.preventDefault();
@@ -83,17 +130,14 @@
         createOrUpdate(cliente, URL, METHOD);
     });
 
-    // Ccriar ou atualizar cliente
     function createOrUpdate(cliente, URL, METHOD) {
-        console.log(cliente);
-
         fetch(URL, {
             method: METHOD,
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(cliente)
         })
-        .then(async(res) => { return await checkError(res) })
-        .then((cliente) => { 
+        .then(async(res) => checkError(res))
+        .then(() => { 
             form.reset();
             window.location.reload();
         })
@@ -101,122 +145,91 @@
             document.getElementById('error').innerText = error.message || JSON.stringify(error);
         });
     }
-    
-    // Buscar cliente pelo id e carregar no formulário
+
     function editCliente(id) {
-        fetch("/clientes/" + id, {
-            method: "GET"
-        })
-        .then(async (res) => { return await checkError(res) })
+        fetch("/clientes/" + id, { method: "GET" })
+        .then(async (res) => checkError(res))
         .then(cliente => {
-            console.log('retornou o cliente', cliente) 
             for (let prop in cliente) {
                 const input = document.querySelector(`input[name="${prop}"]`);
-                input.value = cliente[prop];
+                if (input) input.value = cliente[prop];
             }
+            M.updateTextFields();
         })
         .catch(error => { document.getElementById('error').innerText = error });
     }
 
-    // Deletar cliente pelo id
     function deleteCliente(id) {
-        fetch("/clientes/" + id, {
-        method: "DELETE"
-        })
-        .then(async (res) => { return await checkError(res) })
-        .then((cliente) => {
-            window.location.reload();
-        })
+        fetch("/clientes/" + id, { method: "DELETE" })
+        .then(async (res) => checkError(res))
+        .then(() => { window.location.reload(); })
         .catch((error) => { document.getElementById('error').innerText = JSON.stringify(error) });
     }
 
-    // Checar erro na resposta da requisição
     async function checkError(res) {
         if (!res.ok) {
-                const err = await res.json();
-                throw err;
-            }
-            return res.json();
+            const err = await res.json();
+            throw err;
+        }
+        return res.json();
     }
 
-    // Montar dados do formulário usando FormData
     function mountDataForm() {
         const formData = new FormData(form);
         const cliente = {};
-        formData.forEach((v, k) => {
-            cliente[k] = v;
-        });
+        formData.forEach((v, k) => { cliente[k] = v; });
         return cliente;
     }
 
-    // Função para formatar o telefone no padrão brasileiro
     function formatarTelefone(input) {
-        // Remove tudo que não é dígito
         let telefone = input.value.replace(/\D/g, '');
-
-        // Aplica a máscara conforme o tamanho do número
         if (telefone.length <= 2) {
             telefone = `(${telefone}`;
-        } else if (telefone.length <= 3) {
+        } else if (telefone.length <= 6) {
             telefone = `(${telefone.substring(0, 2)}) ${telefone.substring(2)}`;
-        } else if (telefone.length <= 7) {
-            telefone = `(${telefone.substring(0, 2)}) ${telefone.substring(2, 3)} ${telefone.substring(3)}`;
-        } else if (telefone.length <= 11) {
-            telefone = `(${telefone.substring(0, 2)}) ${telefone.substring(2, 3)} ${telefone.substring(3, 7)}-${telefone.substring(7)}`;
+        } else if (telefone.length <= 10) {
+            telefone = `(${telefone.substring(0, 2)}) ${telefone.substring(2, 6)}-${telefone.substring(6)}`;
         } else {
-            // Limita a 11 dígitos (formato brasileiro)
-            telefone = telefone.substring(0, 12);
-            telefone = `(${telefone.substring(0, 2)}) ${telefone.substring(2, 3)} ${telefone.substring(3, 7)}-${telefone.substring(7)}`;
+            telefone = `(${telefone.substring(0, 2)}) ${telefone.substring(2, 7)}-${telefone.substring(7, 11)}`;
         }
-
-        // Atualiza o valor do campo
         input.value = telefone;
     }
-    // Função para formatar o CEP no padrão XXXXX-XXX
+
     function formatarCEP(input) {
-    let cep = input.value.replace(/\D/g, '');
-
-    if (cep.length > 5) {
-        cep = cep.slice(0, 5) + '-' + cep.slice(5, 8);
+        let cep = input.value.replace(/\D/g, '');
+        if (cep.length > 5) {
+            cep = cep.slice(0, 5) + '-' + cep.slice(5, 8);
+        }
+        input.value = cep;
     }
 
-    input.value = cep;
-    }
-
-    // Adiciona um evento para buscar o CEP quando o campo perder o foco
     document.getElementById('cep').addEventListener('blur', buscarCEP);
 
-    // Função para buscar dados do CEP usando a API ViaCEP
     function buscarCEP() {
         const cep = document.getElementById('cep').value.replace(/\D/g, '');
         const errorSpan = document.getElementById('error');
 
-        // Verifica se o CEP tem 8 dígitos
         if (cep.length !== 8) {
             errorSpan.innerText = 'CEP inválido. Digite 8 números.';
             return;
         }
 
-    // Faz a requisição para a API ViaCEP
-    fetch(`https://viacep.com.br/ws/${cep}/json/`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.erro) {
-                errorSpan.innerText = 'CEP não encontrado.';
-                return;
-            }
-
-            // Preenche os campos com os dados retornados
-            document.getElementById('logradouro').value = data.logradouro || '';
-            document.getElementById('bairro').value = data.bairro || '';
-            document.getElementById('estado').value = data.uf || '';
-            
-            // Limpa mensagens de erro
-            errorSpan.innerText = '';
-        })
-        .catch(error => {
-            errorSpan.innerText = 'Erro ao buscar CEP. Tente novamente.';
-            console.error('Erro:', error);
-        });
+        fetch(`https://viacep.com.br/ws/${cep}/json/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.erro) {
+                    errorSpan.innerText = 'CEP não encontrado.';
+                    return;
+                }
+                document.getElementById('logradouro').value = data.logradouro || '';
+                document.getElementById('bairro').value = data.bairro || '';
+                document.getElementById('estado').value = data.uf || '';
+                M.updateTextFields();
+                errorSpan.innerText = '';
+            })
+            .catch(error => {
+                errorSpan.innerText = 'Erro ao buscar CEP. Tente novamente.';
+                console.error('Erro:', error);
+            });
     }
 </script>

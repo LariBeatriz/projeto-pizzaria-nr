@@ -8,8 +8,22 @@ const options = {
       version: '1.0.0',
       description: 'Documentação gerada automaticamente com Swagger',
     },
+    components: {
+      securitySchemes: {
+        bearerAuth: {           // Nome do esquema de segurança
+          type: 'http',        // Tipo HTTP
+          scheme: 'bearer',    // Tipo do token
+          bearerFormat: 'JWT', // Formato do token
+        }
+      }
+    },
+    security: [
+      {
+        bearerAuth: [] // Aplica o esquema globalmente a todas as rotas
+      }
+    ]
   },
-  apis: ['./routes/*.js'], // <-- caminho relativo às rotas
+  apis: ['./routes/*.js'], // caminho relativo às rotas
 };
 
 const swaggerSpec = swaggerJSDoc(options);

@@ -1,21 +1,24 @@
 <h1><%= title %></h1>
 
-<form id="pedidoForm" class="col s12">
+<form id="pedidoForm" class="row">
   <input type="hidden" name="id" id="id" />
 
-  <div class="input-field">
+  <div class="input-field col s12 m6">
+    <i class="material-icons prefix">event</i>
     <input required name="dataHora" id="dataHora" type="datetime-local">
     <label for="dataHora" class="active">Data e Hora</label>
   </div>
 
-  <div class="input-field">
+  <div class="input-field col s12 m6">
+    <i class="material-icons prefix">person</i>
     <select required name="cliente" id="cliente">
       <option value="" disabled selected>Selecione um cliente</option>
     </select>
     <label for="cliente">Cliente</label>
   </div>
 
-  <div class="input-field">
+  <div class="input-field col s12 m6">
+    <i class="material-icons prefix">assignment</i>
     <select required name="statusPedido" id="statusPedido">
       <option value="" disabled selected>Selecione</option>
       <option value="Em preparo">Em preparo</option>
@@ -27,7 +30,8 @@
     <label for="statusPedido">Status do Pedido</label>
   </div>
 
-  <div class="input-field">
+  <div class="input-field col s12 m6">
+    <i class="material-icons prefix">payment</i>
     <select required name="formaPagamento" id="formaPagamento">
       <option value="" disabled selected>Selecione</option>
       <option value="Dinheiro">Dinheiro</option>
@@ -37,17 +41,19 @@
     <label for="formaPagamento">Forma de Pagamento</label>
   </div>
 
-  <fieldset>
-    <legend>Itens do Pedido</legend>
+  <fieldset class="z-depth-1 col s12" style="padding: 1rem; border-radius: 8px;">
+    <legend><i class="material-icons left">shopping_cart</i>Itens do Pedido</legend>
     <div id="itensCheckbox" class="input-field"></div>
   </fieldset>
 
-  <div class="input-field">
+  <div class="input-field col s12 m6">
+    <i class="material-icons prefix">attach_money</i>
     <input required name="totalPedido" id="totalPedido" type="text" readonly>
     <label for="totalPedido" class="active">Total do Pedido</label>
   </div>
 
-  <div class="input-field">
+  <div class="input-field col s12 m6">
+    <i class="material-icons prefix">local_shipping</i>
     <select required name="tipoPedido" id="tipoPedido">
       <option value="" disabled selected>Selecione</option>
       <option value="Retirada">Retirada</option>
@@ -57,23 +63,33 @@
     <label for="tipoPedido">Tipo do Pedido</label>
   </div>
 
-  <div class="input-field">
+  <div class="input-field col s12 m6">
+    <i class="material-icons prefix">comment</i>
     <input name="observacoes" id="observacoes" type="text">
     <label for="observacoes">Observações</label>
   </div>
 
-  <div class="input-field">
+  <div class="input-field col s12 m6">
+    <i class="material-icons prefix">home</i>
     <input name="enderecoEntrega" id="enderecoEntrega" type="text" readonly>
     <label for="enderecoEntrega">Endereço de Entrega</label>
   </div>
 
-  <button type="submit" class="btn waves-effect waves-light">Enviar</button>
-  <button type="reset" class="btn red lighten-1">Cancelar</button>
+  <div class="col s12" style="margin-top: 1.5rem;">
+  <div class="btn-group" style="display: flex; gap: 1rem;">
+    <button type="submit" class="btn waves-effect waves-light green">
+      <i class="material-icons left">send</i>Enviar
+    </button>
+    <button type="reset" class="btn red lighten-1">
+      <i class="material-icons left">cancel</i>Cancelar
+    </button>
+  </div>
+</div>
 </form>
 
 <span id="error" class="red-text"></span>
 
-<table class="highlight">
+<table class="highlight responsive-table">
   <thead>
     <tr>
       <% for(let col of cols) { %>
@@ -103,13 +119,21 @@
         <td><%= pedido.tipoPedido %></td>
         <td><%= pedido.enderecoEntrega %></td>
         <td>
-          <button onclick="editPedido('<%= pedido.id %>')" class="btn-small blue">Editar</button>
-          <button onclick="deletePedido('<%= pedido.id %>')" class="btn-small red">Deletar</button>
-        </td>
+  <div class="btn-group" style="display: flex; gap: 0.5rem;">
+    <button onclick="editPedido('<%= pedido.id %>')" class="btn-small blue">
+      <i class="material-icons">edit</i>
+    </button>
+    <button onclick="deletePedido('<%= pedido.id %>')" class="btn-small red">
+      <i class="material-icons">delete</i>
+    </button>
+  </div>
+</td>
       </tr>
     <% } %>
   </tbody>
 </table>
+
+<div style="padding-bottom: 2rem;"></div>
 
 <script>
   window.TOKEN = "<%= token %>";
@@ -149,7 +173,7 @@
               M.FormSelect.getInstance(input)?.destroy();
               M.FormSelect.init(input);
             } else if (prop === "dataHora" && input.type === "datetime-local") {
-              input.value = pedido[prop].slice(0,16).replace(' ', 'T');
+              input.value = pedido[prop].slice(0, 16).replace(' ', 'T');
             } else {
               input.value = pedido[prop];
             }

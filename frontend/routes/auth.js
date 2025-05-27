@@ -3,11 +3,12 @@ var router = express.Router();
 
 const url = "http://localhost:3000/auth/login";
 
-/* GET home page. */
+/* GET login page. */
 router.get('/', function(req, res, next) {
-  res.render('layout', {body:'pages/login', title: 'Express', error:''});
+  res.render('layout', { body: 'pages/login', title: 'Express', error: '' });
 });
 
+/* POST login */
 router.post('/', (req, res) => {
   const { username, password } = req.body;
   console.log('aqui chega ', username, password);
@@ -31,8 +32,19 @@ router.post('/', (req, res) => {
     })
     .catch((error) => {
       console.log('Erro', error);
-      res.render('layout', { body: "pages/login", title: 'Express', error});
+      res.render('layout', { body: "pages/login", title: 'Express', error });
     });
+});
+
+/* ✅ GET logout */
+router.get('/logout', function(req, res) {
+  req.session.destroy(function(err) {
+    if (err) {
+      console.error('Erro ao destruir a sessão:', err);
+      return res.status(500).send('Erro ao fazer logout');
+    }
+    res.redirect('/login');  // volta para a tela de login
+  });
 });
 
 module.exports = router;

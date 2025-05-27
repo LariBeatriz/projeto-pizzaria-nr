@@ -1,39 +1,55 @@
 <div class="container">
   <div class="row">
     <div class="col s12 m6 offset-m3">
-      <h5 class="center-align">Login</h5>
-      <form id="loginForm" action="/login" method="POST">
-        <div class="input-field">
-          <input id="username" type="text" name="username" required>
-          <label for="username">Username</label>
+      <div class="card z-depth-3">
+        <div class="card-content">
+          <span class="card-title center-align">Login</span>
+
+          <form id="loginForm" action="/login" method="POST">
+            <div class="input-field">
+              <i class="material-icons prefix">account_circle</i>
+              <input id="username" type="text" name="username" required>
+              <label for="username">Username</label>
+            </div>
+
+            <div class="input-field">
+              <i class="material-icons prefix">lock</i>
+              <input id="password" type="password" name="password" required>
+              <label for="password">Password</label>
+            </div>
+
+            <div class="center-align" style="margin-top: 20px;">
+              <button type="submit" class="btn waves-effect waves-light green">
+                <i class="material-icons left">login</i>Login
+              </button>
+            </div>
+
+            <% if (error) { %>
+              <div class="red-text center-align" style="margin-top: 10px;">
+                <%= error.error %>
+              </div>
+            <% } %>
+          </form>
         </div>
-        <div class="input-field">
-          <input id="password" type="password" name="password" required>
-          <label for="password">Password</label>
-        </div>
-        <div class="center-align">
-          <button type="submit" class="btn waves-effect waves-light">Login</button><br>
-          <% if (error) { %>
-            <span><%= error.error %></span>
-          <% } %>
-        </div>
-      </form>
+
+        
+      </div>
     </div>
   </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  M.updateTextFields();
-});
+  document.addEventListener('DOMContentLoaded', function() {
+    M.updateTextFields();
+  });
 
-document.getElementById('loginForm').addEventListener('submit', function(event) {
-  var username = document.getElementById('username').value;
-  var password = document.getElementById('password').value;
+  document.getElementById('loginForm').addEventListener('submit', function(event) {
+    var username = document.getElementById('username').value.trim();
+    var password = document.getElementById('password').value.trim();
 
-  if (!username || !password) {
-    event.preventDefault();
-    M.toast({html: 'Por favor, preencha todos os campos.', classes: 'red'});
-  }
-});
+    if (!username || !password) {
+      event.preventDefault();
+      M.toast({html: 'Por favor, preencha todos os campos.', classes: 'red'});
+    }
+  });
 </script>

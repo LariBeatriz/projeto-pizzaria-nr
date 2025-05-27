@@ -1,58 +1,83 @@
-<h1>
-    <%= title %>
-</h1>
+<div class="container">
+  <h4 class="center-align"><%= title %></h4>
 
-<form id="userForm">
+  <form id="userForm" class="row">
     <input required type="hidden" name="id" id="id">
 
-    <label for="username">Nome</label>
-    <input required name="username" id="username" type="text"><br>
+    <div class="input-field col s12 m6">
+      <i class="material-icons prefix">person</i>
+      <input required name="username" id="username" type="text">
+      <label for="username">Nome</label>
+    </div>
 
-    <label for="password">Senha</label>
-    <input required name="password" id="password" type="password"
-                    minlength="8" maxlength="15"><br>
+    <div class="input-field col s12 m6">
+      <i class="material-icons prefix">lock</i>
+      <input required name="password" id="password" type="password" minlength="8" maxlength="15">
+      <label for="password">Senha</label>
+    </div>
 
-    <label for="email">Email</label>
-    <input required name="email" id="email" type="email"><br>
+    <div class="input-field col s12 m6">
+      <i class="material-icons prefix">email</i>
+      <input required name="email" id="email" type="email">
+      <label for="email">Email</label>
+    </div>
 
-    <label for="phone">Telefone</label>
-    <input required name="phone" id="phone" type="text" oninput="formatarTelefone(this)"
-                    maxlength="16" placeholder="(XX) XXXXX-XXXX"><br>
+    <div class="input-field col s12 m6">
+      <i class="material-icons prefix">phone</i>
+      <input required name="phone" id="phone" type="text" oninput="formatarTelefone(this)" maxlength="16" placeholder="(XX) XXXXX-XXXX">
+      <label for="phone">Telefone</label>
+    </div>
 
-    <button type="submit">Enviar</button>
-    <button type="reset">Cancelar</button>
-</form>
+    <div class="col s12" style="margin-top: 1.5rem;">
+      <div style="display: flex; gap: 1rem;">
+        <button type="submit" class="btn waves-effect waves-light green">
+          <i class="material-icons left">send</i>Enviar
+        </button>
+        <button type="reset" class="btn red lighten-1">
+          <i class="material-icons left">cancel</i>Cancelar
+        </button>
+      </div>
+    </div>
+  </form>
 
-<span id="error"></span>
+  <div class="red-text" id="error"></div>
 
-<% if (error) { %>
-    <span><%= error %></span>
-<% } %>
+  <% if (error) { %>
+    <div class="red-text"><%= error %></div>
+  <% } %>
 
-<table>
+  <table class="highlight responsive-table">
     <thead>
-        <tr>
-            <% for(let col of cols) { %>
-                <th><%= col %></th>
-            <% } %>
-        </tr>
+      <tr>
+        <% for(let col of cols) { %>
+          <th><%= col %></th>
+        <% } %>
+        <th>Ações</th>
+      </tr>
     </thead>
     <tbody>
-        <% for(let user of users) { %>
-            <tr>
-                <% for(let prop in user) { %>
-                    <td>
-                        <%= user[prop] %>
-                    </td>
-                <% } %>
-                <td>
-                    <button onclick="editUser('<%= user.id %>')">Editar</button>
-                    <button onclick="deleteUser('<%= user.id %>')">Deletar</button>
-                </td>
-            </tr>
-        <% } %>
+      <% for(let user of users) { %>
+        <tr>
+          <% for(let prop in user) { %>
+            <td><%= user[prop] %></td>
+          <% } %>
+          <td>
+            <div style="display: flex; gap: 0.5rem;">
+              <button onclick="editUser('<%= user.id %>')" class="btn-small blue">
+                <i class="material-icons">edit</i>
+              </button>
+              <button onclick="deleteUser('<%= user.id %>')" class="btn-small red">
+                <i class="material-icons">delete</i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      <% } %>
     </tbody>
-</table>
+  </table>
+
+  <div style="padding-bottom: 2rem;"></div>
+</div>
 
 <script>
     // Evento de clique no botão Editar
