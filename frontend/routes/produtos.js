@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-const url = "http://54.233.202.5:3000/produtos/";
+const url = "https://zgr2l52z-3000.brs.devtunnels.ms/produtos/";
 
 /* GET produtos listing. */
 router.get('/', function(req, res, next) {

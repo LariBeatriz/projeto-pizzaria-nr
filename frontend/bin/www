@@ -90,7 +90,7 @@ function onListening() {
 
   console.log(`
   🌐 \x1b[1m\x1b[35m[SERVIDOR FRONT]\x1b[0m \x1b[1m
-  URL: \x1b[4mhttp://54.233.202.5:${addr.port}\x1b[0m
+  URL: \x1b[4mhttps://zgr2l52z-4000.brs.devtunnels.ms/\x1b[0m
   PID: ${process.pid} (CTRL+C para encerrar)
   `);
 }
